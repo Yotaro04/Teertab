@@ -96,8 +96,14 @@
             color: var(--text-sub);
             letter-spacing: 0.04em;
         }
+        .profile-balance-heart {
+            font-size: 1.35rem;
+            font-weight: 850;
+            color: #ff6bcb;
+            letter-spacing: 0.02em;
+        }
         .profile-balance-value {
-            font-size: 1.05rem;
+            font-size: 1.55rem;
             font-weight: 950;
             color: var(--text-main);
             letter-spacing: 0.02em;
@@ -387,7 +393,7 @@
         /* コンテンツエリア */
         .content-section {
             display: none; /* 初期は非表示 */
-            padding: 0 calc(16px + env(safe-area-inset-right, 0px)) 0 calc(16px + env(safe-area-inset-left, 0px));
+            padding: 0 calc(26px + env(safe-area-inset-right, 0px)) 0 calc(26px + env(safe-area-inset-left, 0px));
             animation: fadeIn 0.3s ease;
             flex: 1 1 auto;
             min-height: 0;
@@ -469,7 +475,7 @@
         }
         .req-author {
             font-size: 12px;
-            font-weight: 620;
+            font-weight: 500;
             color: rgba(255, 255, 255, 0.65);
             letter-spacing: 0.01em;
             margin-top: 4px;
@@ -481,7 +487,7 @@
             align-items: center;
             color: var(--text-sub);
             font-size: 12px;
-            font-weight: 650;
+            font-weight: 500;
             letter-spacing: 0.01em;
         }
         .req-meta-item {
@@ -508,7 +514,7 @@
         .req-tag {
             color: var(--primary);
             font-size: 13px;
-            font-weight: 720;
+            font-weight: 540;
             letter-spacing: 0.01em;
             white-space: nowrap;
         }
@@ -1399,15 +1405,15 @@
                     <path d="M20 20l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
                 </svg>
             </button>
-            <button type="button" class="header-action-btn header-action-btn--dm" id="dmBtn" title="DM" aria-label="ダイレクトメッセージ">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
             <button type="button" class="header-action-btn header-action-btn--notif" id="notifBtn" title="通知" aria-label="通知">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                     <path d="M18 8a6 6 0 10-12 0c0 7-3 7-3 7h18s-3 0-3-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                     <path d="M13.73 21a2 2 0 01-3.46 0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+            </button>
+            <button type="button" class="header-action-btn header-action-btn--dm" id="dmBtn" title="DM" aria-label="ダイレクトメッセージ">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
         </div>
@@ -1696,7 +1702,7 @@
             <div class="account-name">白石 太郎</div>
             <div class="profile-balance-row" aria-label="ありがとう">
                 <div class="profile-balance-pill" aria-label="ありがとう">
-                    <span class="profile-balance-label">ありがとう</span>
+                    <span class="profile-balance-heart" aria-hidden="true">♥</span>
                     <span class="profile-balance-value thanks-gradient" id="accountThanksCount">10</span>
                 </div>
             </div>
@@ -2104,7 +2110,7 @@
 
         function renderAccount() {
             var thanksCountEl = document.getElementById('accountThanksCount');
-            if (thanksCountEl) thanksCountEl.textContent = state.profile.thanksCount.toLocaleString();
+            if (thanksCountEl) thanksCountEl.textContent = String(state.profile.thanksCount.toLocaleString());
             updateHeaderPoints();
             var list = document.getElementById('accountHistoryList');
             if (list) renderHistoryCards(list, state.history);
