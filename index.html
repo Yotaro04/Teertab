@@ -429,6 +429,89 @@
             gap: 12px;
             align-items: flex-start;
         }
+        /* Request card (X post-ish) */
+        .req-card {
+            display: grid;
+            grid-template-columns: 42px minmax(0, 1fr);
+            column-gap: 10px;
+            row-gap: 8px;
+            align-items: start;
+        }
+        .req-card-main {
+            grid-column: 2;
+            min-width: 0;
+            display: grid;
+            gap: 8px;
+        }
+        .req-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 999px;
+            background: rgba(66, 230, 210, 0.14);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 0 0 auto;
+            overflow: hidden;
+        }
+        .req-icon span { font-size: 18px; line-height: 1; }
+        .req-title {
+            font-weight: 820;
+            font-size: 1.03rem;
+            line-height: 1.25;
+            letter-spacing: 0.01em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+        .req-author {
+            font-size: 12px;
+            font-weight: 620;
+            color: rgba(255, 255, 255, 0.65);
+            letter-spacing: 0.01em;
+            margin-top: 4px;
+        }
+        .req-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 650;
+            letter-spacing: 0.01em;
+        }
+        .req-meta-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .ic {
+            width: 16px;
+            height: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0.9;
+            flex: 0 0 auto;
+        }
+        .req-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 2px;
+        }
+        .req-tag {
+            color: var(--primary);
+            font-size: 13px;
+            font-weight: 720;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+        }
         .home-avatar {
             width: 36px;
             height: 36px;
@@ -665,6 +748,108 @@
         }
         #request .request-form .card:last-child {
             margin-bottom: 0;
+        }
+        /* Request creation layout */
+        #request .req-create-shell {
+            background: transparent;
+            border: none;
+            border-radius: 0;
+            padding: 0;
+            box-shadow: none;
+        }
+        #request .req-create {
+            display: grid;
+            gap: 12px;
+        }
+        #request .req-title-row {
+            display: grid;
+            grid-template-columns: 46px minmax(0, 1fr);
+            gap: 10px;
+            align-items: center;
+        }
+        #request .req-body {
+            padding-left: 56px; /* 46px icon + 10px gap */
+        }
+        #request .req-create-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 999px;
+            background: rgba(66, 230, 210, 0.14);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        #request .req-create-icon span { font-size: 20px; line-height: 1; }
+        #request .req-title-input {
+            margin-bottom: 0 !important;
+            font-weight: 900;
+        }
+        #request .field-stack {
+            display: grid;
+            gap: 10px;
+            margin-top: 4px;
+        }
+        #request .field {
+            display: grid;
+            grid-template-columns: 24px minmax(0, 1fr);
+            gap: 10px;
+            align-items: center;
+            background: transparent;
+            border: 1px solid rgba(255, 255, 255, 0.10);
+            border-radius: 12px;
+            padding: 10px 12px;
+            min-height: 52px;
+        }
+        #request .field .ic {
+            opacity: 0.9;
+        }
+        #request .field input[type="text"],
+        #request .field input[type="datetime-local"],
+        #request .field textarea {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            margin-bottom: 0;
+            font-size: 16px;
+            width: 100%;
+            border: none;
+            outline: none;
+        }
+        #request .field textarea {
+            min-height: 88px;
+            padding: 8px 0;
+        }
+        #request .field--textarea {
+            align-items: start;
+        }
+        #request .field--textarea .ic {
+            margin-top: 4px;
+        }
+        #request .req-people-stepper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            width: 100%;
+        }
+        #request .req-people-stepper .req-stepper {
+            flex: 1;
+            margin: 0;
+            min-height: 44px;
+        }
+        /* remove leftover "box" inside people/meta input */
+        #request .field .req-stepper {
+            background: transparent;
+            padding: 0;
+            border-radius: 0;
+            min-height: 44px;
+        }
+        #request .field .req-stepper-btn {
+            background: rgba(255, 255, 255, 0.06);
+        }
+        #request .field .req-stepper-value {
+            font-weight: 700;
         }
         /* Request: lightweight form */
         #request .req-grid {
@@ -1229,73 +1414,65 @@
     </div>
     <div id="request" class="content-section">
         <form class="request-form" id="requestForm" action="#" method="post">
-            <div class="card">
-                <label class="tag" for="req-title">タイトル</label>
-                <input type="text" id="req-title" name="title" placeholder="例: 週末の河川敷クリーンアップ手伝い" autocomplete="off">
-                <div class="req-grid" style="margin-top: 10px;">
-                    <div class="req-row2">
-                        <div>
-                            <span class="tag">人数</span>
-                            <div class="req-stepper" role="group" aria-label="人数">
-                                <button type="button" class="req-stepper-btn" id="reqPeopleDec" aria-label="人数を減らす">−</button>
-                                <div class="req-stepper-value"><span id="reqPeopleValue">1</span>人</div>
-                                <button type="button" class="req-stepper-btn" id="reqPeopleInc" aria-label="人数を増やす">＋</button>
+            <div class="req-create-shell">
+                <div class="req-create">
+                    <div class="req-title-row">
+                        <div class="req-create-icon" aria-hidden="true"><span aria-hidden="true">🤝</span></div>
+                        <input class="req-title-input" type="text" id="req-title" name="title" placeholder="タイトル（例: 週末の河川敷クリーンアップ手伝い）" autocomplete="off" inputmode="text" enterkeyhint="next" autofocus>
+                    </div>
+
+                    <div class="req-body">
+                        <div class="field-stack" aria-label="依頼内容">
+                            <div class="field" aria-label="日時">
+                                <span class="ic" aria-hidden="true">📅</span>
+                                <input type="datetime-local" id="req-when" name="when">
                             </div>
-                            <input type="hidden" id="req-people" name="people" value="1">
-                        </div>
-                        <div>
-                            <label class="tag" for="req-when">日時</label>
-                            <input type="datetime-local" id="req-when" name="when">
+
+                            <div class="field" aria-label="場所">
+                                <span class="ic" aria-hidden="true">📍</span>
+                                <input type="text" id="req-place" name="place" placeholder="場所（例: 品川 / オンライン など）" autocomplete="off" inputmode="text">
+                            </div>
+
+                            <div class="field" aria-label="人数">
+                                <span class="ic" aria-hidden="true">👥</span>
+                                <div class="req-people-stepper">
+                                    <div class="req-stepper" role="group" aria-label="人数">
+                                        <button type="button" class="req-stepper-btn" id="reqPeopleDec" aria-label="人数を減らす">−</button>
+                                        <div class="req-stepper-value"><span id="reqPeopleValue">1</span>人</div>
+                                        <button type="button" class="req-stepper-btn" id="reqPeopleInc" aria-label="人数を増やす">＋</button>
+                                    </div>
+                                    <input type="hidden" id="req-people" name="people" value="1">
+                                </div>
+                            </div>
+
+                            <div class="field" aria-label="タグ">
+                                <span class="ic" aria-hidden="true">#</span>
+                                <input type="text" id="req-tags" name="tags" placeholder="#タグ（例: #清掃 #週末 #初心者歓迎）" autocomplete="off" inputmode="text">
+                            </div>
+
+                            <div class="field field--textarea" aria-label="説明">
+                                <span class="ic" aria-hidden="true">📝</span>
+                                <textarea id="req-desc" name="description" rows="4" placeholder="説明（任意）"></textarea>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="req-row2">
-                        <div>
-                            <span class="tag">所要時間</span>
-                            <div class="preset-row" role="group" aria-label="所要時間">
-                                <button type="button" class="preset" data-preset-duration="30">30分</button>
-                                <button type="button" class="preset is-active" data-preset-duration="60">60分</button>
-                                <button type="button" class="preset" data-preset-duration="90">90分</button>
-                                <button type="button" class="preset" data-preset-duration="120">120分</button>
+                    <details class="req-details">
+                        <summary>画像（任意）</summary>
+                        <div style="margin-top: 12px;">
+                            <div class="upload-block">
+                                <label class="upload-zone" id="uploadZone" for="req-photo">
+                                    <input type="file" id="req-photo" name="photo" class="upload-input" accept="image/*">
+                                    <span class="upload-zone-inner">
+                                        <span class="upload-icon" aria-hidden="true">📷</span>
+                                        <span class="upload-hint">タップして追加（任意）</span>
+                                        <img class="upload-preview" id="uploadPreview" alt="選択した写真のプレビュー">
+                                    </span>
+                                </label>
                             </div>
-                            <input type="hidden" id="req-duration" name="duration" value="60">
                         </div>
-                        <div>
-                            <span class="tag">付与ありがとう</span>
-                            <div class="preset-row" role="group" aria-label="付与ありがとう">
-                                <button type="button" class="preset is-active" data-preset-thanks="10">10ありがとう</button>
-                                <button type="button" class="preset" data-preset-thanks="20">20ありがとう</button>
-                                <button type="button" class="preset" data-preset-thanks="30">30ありがとう</button>
-                            </div>
-                            <input type="hidden" id="req-thanks" name="thanks" value="10">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="tag" for="req-place">場所</label>
-                        <input type="text" id="req-place" name="place" placeholder="例: 品川 / オンライン など" autocomplete="off">
-                    </div>
+                    </details>
                 </div>
-
-                <details class="req-details">
-                    <summary>詳細（説明・画像）</summary>
-                    <div style="margin-top: 12px;">
-                        <label class="tag" for="req-desc">説明</label>
-                        <textarea id="req-desc" name="description" rows="5" placeholder="任意：背景、持ち物、注意点など"></textarea>
-
-                        <label class="tag" style="margin-top: 10px;">画像</label>
-                        <div class="upload-block">
-                            <label class="upload-zone" id="uploadZone" for="req-photo">
-                                <input type="file" id="req-photo" name="photo" class="upload-input" accept="image/*">
-                                <span class="upload-zone-inner">
-                                    <span class="upload-icon" aria-hidden="true">📷</span>
-                                    <span class="upload-hint">タップして追加（任意）</span>
-                                    <img class="upload-preview" id="uploadPreview" alt="選択した写真のプレビュー">
-                                </span>
-                            </label>
-                        </div>
-                    </div>
-                </details>
 
                 <button type="submit" class="submit-btn">依頼を送る</button>
             </div>
@@ -1304,115 +1481,119 @@
     <div id="home" class="content-section active">
         <div class="home-cards">
             <div class="card card-clickable" data-open-detail="vol-1">
-                <div class="home-card-row">
-                    <div class="home-avatar home-avatar--teal" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🎧</span></div>
-                    <div class="home-center">
-                        <div class="home-title-row">
-                            <div class="home-title">品川BP: 空間音響プロデュース</div>
-                            <span class="home-date-badge home-date-badge--today">今日</span>
+                <div class="req-card">
+                    <div class="req-icon" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🎧</span></div>
+                    <div class="req-card-main">
+                        <div>
+                            <div class="req-title">品川BP: 空間音響プロデュース</div>
+                            <div class="req-author">品川コミュニティ</div>
                         </div>
-                        <div class="home-meta-row" aria-label="概要">
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り2枠</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>オンライン</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>60分</span>
+                        <div class="req-meta" aria-label="日時・場所・人数">
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>今日 20:00〜</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📍</span>現地</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>残り2枠</span>
                         </div>
-                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
-                            <span class="home-tag home-tag--muted">初心者歓迎</span>
+                        <div class="req-tags" aria-label="タグ">
+                            <span class="req-tag">#初心者歓迎</span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-2">
-                <div class="home-card-row">
-                    <div class="home-avatar home-avatar--blue" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🗺️</span></div>
-                    <div class="home-center">
-                        <div class="home-title-row">
-                            <div class="home-title">深夜の地図作成ボランティア</div>
-                            <span class="home-date-badge home-date-badge--today">今日</span>
+                <div class="req-card">
+                    <div class="req-icon" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🗺️</span></div>
+                    <div class="req-card-main">
+                        <div>
+                            <div class="req-title">深夜の地図作成ボランティア</div>
+                            <div class="req-author">品川コミュニティ</div>
                         </div>
-                        <div class="home-meta-row" aria-label="概要">
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り1枠</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>オンライン</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>90分</span>
+                        <div class="req-meta" aria-label="日時・場所・人数">
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>今日 22:30〜</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📍</span>オンライン</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>残り1枠</span>
                         </div>
-                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
-                            <span class="home-tag home-tag--muted">経験者歓迎</span>
+                        <div class="req-tags" aria-label="タグ">
+                            <span class="req-tag">#経験者歓迎</span>
+                            <span class="req-tag">#質問だけでもOK</span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-3">
-                <div class="home-card-row">
-                    <div class="home-avatar home-avatar--amber" role="button" tabindex="0" data-open-organizer="児童館スタッフ" aria-label="児童館スタッフのプロフィール"><span aria-hidden="true">🎹</span></div>
-                    <div class="home-center">
-                        <div class="home-title-row">
-                            <div class="home-title">児童館ピアノ伴奏（土曜午後）</div>
-                            <span class="home-date-badge home-date-badge--tomorrow">明日</span>
+                <div class="req-card">
+                    <div class="req-icon" role="button" tabindex="0" data-open-organizer="児童館スタッフ" aria-label="児童館スタッフのプロフィール"><span aria-hidden="true">🎹</span></div>
+                    <div class="req-card-main">
+                        <div>
+                            <div class="req-title">児童館ピアノ伴奏（土曜午後）</div>
+                            <div class="req-author">児童館スタッフ</div>
                         </div>
-                        <div class="home-meta-row" aria-label="概要">
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り1枠</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>現地</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>60分</span>
+                        <div class="req-meta" aria-label="日時・場所・人数">
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>明日 14:00〜</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📍</span>現地</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>残り1枠</span>
                         </div>
-                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
-                            <span class="home-tag home-tag--muted">初心者歓迎</span>
+                        <div class="req-tags" aria-label="タグ">
+                            <span class="req-tag">#初心者歓迎</span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-4">
-                <div class="home-card-row">
-                    <div class="home-avatar home-avatar--lime" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🧤</span></div>
-                    <div class="home-center">
-                        <div class="home-title-row">
-                            <div class="home-title">河川敷クリーンアップ＆記録</div>
+                <div class="req-card">
+                    <div class="req-icon" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🧤</span></div>
+                    <div class="req-card-main">
+                        <div>
+                            <div class="req-title">河川敷クリーンアップ＆記録</div>
+                            <div class="req-author">品川コミュニティ</div>
                         </div>
-                        <div class="home-meta-row" aria-label="概要">
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り2枠</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>現地</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>120分</span>
+                        <div class="req-meta" aria-label="日時・場所・人数">
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>今週末 10:00〜</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📍</span>現地</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>残り2枠</span>
                         </div>
-                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
-                            <span class="home-tag home-tag--muted">体力ある方歓迎</span>
-                            <span class="home-tag home-tag--muted">今週末</span>
+                        <div class="req-tags" aria-label="タグ">
+                            <span class="req-tag">#体力ある方歓迎</span>
+                            <span class="req-tag">#キャンセル可能</span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-5">
-                <div class="home-card-row">
-                    <div class="home-avatar home-avatar--pink" role="button" tabindex="0" data-open-organizer="字幕チーム" aria-label="字幕チームのプロフィール"><span aria-hidden="true">💬</span></div>
-                    <div class="home-center">
-                        <div class="home-title-row">
-                            <div class="home-title">字幕付き動画の校正ボランティア</div>
+                <div class="req-card">
+                    <div class="req-icon" role="button" tabindex="0" data-open-organizer="字幕チーム" aria-label="字幕チームのプロフィール"><span aria-hidden="true">💬</span></div>
+                    <div class="req-card-main">
+                        <div>
+                            <div class="req-title">字幕付き動画の校正ボランティア</div>
+                            <div class="req-author">字幕チーム</div>
                         </div>
-                        <div class="home-meta-row" aria-label="概要">
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り1枠</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>オンライン</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>45分</span>
+                        <div class="req-meta" aria-label="日時・場所・人数">
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>いつでも（相談）</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📍</span>オンライン</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>残り1枠</span>
                         </div>
-                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
-                            <span class="home-tag home-tag--muted">ライティングOK</span>
-                            <span class="home-tag home-tag--muted">土日</span>
+                        <div class="req-tags" aria-label="タグ">
+                            <span class="req-tag">#ライティングOK</span>
+                            <span class="req-tag">#質問だけでもOK</span>
                         </div>
                     </div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-6">
-                <div class="home-card-row">
-                    <div class="home-avatar home-avatar--teal" role="button" tabindex="0" data-open-organizer="地域FM" aria-label="地域FMのプロフィール"><span aria-hidden="true">🎨</span></div>
-                    <div class="home-center">
-                        <div class="home-title-row">
-                            <div class="home-title">地域FM番組のロゴリフレッシュ</div>
+                <div class="req-card">
+                    <div class="req-icon" role="button" tabindex="0" data-open-organizer="地域FM" aria-label="地域FMのプロフィール"><span aria-hidden="true">🎨</span></div>
+                    <div class="req-card-main">
+                        <div>
+                            <div class="req-title">地域FM番組のロゴリフレッシュ</div>
+                            <div class="req-author">地域FM</div>
                         </div>
-                        <div class="home-meta-row" aria-label="概要">
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り1枠</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>オンライン</span>
-                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>2日</span>
+                        <div class="req-meta" aria-label="日時・場所・人数">
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>今月中（相談）</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">📍</span>オンライン</span>
+                            <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>残り1枠</span>
                         </div>
-                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
-                            <span class="home-tag home-tag--muted">デザインできる方</span>
-                            <span class="home-tag home-tag--muted">今月</span>
+                        <div class="req-tags" aria-label="タグ">
+                            <span class="req-tag">#デザインできる方</span>
+                            <span class="req-tag">#キャンセル可能</span>
                         </div>
                     </div>
                 </div>
@@ -1677,6 +1858,12 @@
             setHeaderTitleForTab(id);
             document.getElementById('appShell').classList.toggle('has-back', state.viewStack.length > 1);
             updateHeaderPoints();
+            if (id === 'request') {
+                window.setTimeout(function () {
+                    var titleInput = document.getElementById('req-title');
+                    if (titleInput) titleInput.focus({ preventScroll: true });
+                }, 50);
+            }
             // Keep bottom nav highlight consistent on back navigation.
             document.querySelectorAll('.bottom-nav .nav-item').forEach(function (n) { n.classList.remove('active'); });
             if (id === 'home') {
@@ -1816,6 +2003,36 @@
             var wrap = document.getElementById('searchResults');
             if (!wrap) return;
             wrap.innerHTML = '';
+            function hashTag(t) {
+                var s = String(t == null ? '' : t).trim();
+                if (!s) return '';
+                if (s[0] === '#') return s;
+                return '#' + s.replace(/\s+/g, '');
+            }
+            function reqCardHTML(v) {
+                var thumb = v.thumb || '🤝';
+                var remaining = (typeof v.capacity === 'number' && typeof v.joined === 'number') ? Math.max(0, v.capacity - v.joined) : null;
+                var placeLabel = v.remote ? 'オンライン' : '現地';
+                var tags = (v.tags || []).slice(0, 4).map(hashTag).filter(Boolean);
+                return '' +
+                    '<div class="req-card">' +
+                        '<div class="req-icon" aria-hidden="true"><span aria-hidden="true">' + thumb + '</span></div>' +
+                        '<div class="req-card-main">' +
+                            '<div>' +
+                                '<div class="req-title">' + (v.title || '') + '</div>' +
+                                '<div class="req-author">' + (v.chatWith || '主催者') + '</div>' +
+                            '</div>' +
+                            '<div class="req-meta" aria-label="日時・場所・人数">' +
+                                '<span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>' + (v.dateTimeText || v.when || '') + '</span>' +
+                                '<span class="req-meta-item"><span class="ic" aria-hidden="true">📍</span>' + placeLabel + '</span>' +
+                                '<span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>' + ((remaining === null) ? '残り枠: －' : ('残り' + remaining + '枠')) + '</span>' +
+                            '</div>' +
+                            '<div class="req-tags" aria-label="タグ">' +
+                                (tags.length ? tags.map(function (t) { return '<span class="req-tag">' + t + '</span>'; }).join('') : '') +
+                            '</div>' +
+                        '</div>' +
+                    '</div>';
+            }
             var q = (state.filters.q || '').trim().toLowerCase();
             var items = Object.keys(state.vols).map(function (k) { return state.vols[k]; });
             items = items.filter(function (v) {
@@ -1836,16 +2053,7 @@
             items.forEach(function (v) {
                 var card = document.createElement('div');
                 card.className = 'card card-clickable';
-                var thumb = v.thumb || '🤝';
-                card.innerHTML =
-                    '<div class="vol-card">' +
-                        '<div class="vol-thumb" aria-hidden="true">' + thumb + '</div>' +
-                        '<div class="vol-body">' +
-                            '<span class="tag">' + v.tag + '</span>' +
-                            '<div class="vol-title">' + v.title + '</div>' +
-                            '<div class="vol-desc">' + v.when + ' / ' + v.place + '</div>' +
-                        '</div>' +
-                    '</div>';
+                card.innerHTML = reqCardHTML(v);
                 card.addEventListener('click', function () { openDetail(v.id); });
                 wrap.appendChild(card);
             });
@@ -1927,26 +2135,38 @@
                 if (!openVols.length) {
                     openWrap.innerHTML = '<div class="card" style="text-align:left;">募集中の活動はありません</div>';
                 } else {
+                    function hashTag(t) {
+                        var s = String(t == null ? '' : t).trim();
+                        if (!s) return '';
+                        if (s[0] === '#') return s;
+                        return '#' + s.replace(/\s+/g, '');
+                    }
                     openVols.forEach(function (v) {
                         var card = document.createElement('div');
                         card.className = 'card card-clickable';
                         card.style.marginBottom = '0';
 
-                        var remoteLabel = v.remote ? 'オンライン' : '現地';
-                        var tags = [
-                            v.when,
-                            remoteLabel,
-                            '10ありがとう',
-                            '初心者歓迎'
-                        ];
+                        var remaining = (typeof v.capacity === 'number' && typeof v.joined === 'number') ? Math.max(0, v.capacity - v.joined) : null;
+                        var placeLabel = v.remote ? 'オンライン' : '現地';
+                        var tags = (v.tags || []).slice(0, 4).map(hashTag).filter(Boolean);
 
                         card.innerHTML =
-                            '<div class="vol-card">' +
-                            '<div class="vol-thumb" aria-hidden="true">' + (v.thumb || '🤝') + '</div>' +
-                            '<div class="vol-body">' +
-                            '<div class="home-tag-row" style="margin-top:0;">' + tags.map(function (t) { return '<span class="home-tag">' + t + '</span>'; }).join('') + '</div>' +
-                            '<div class="vol-title">' + v.title + '</div>' +
-                            '</div>' +
+                            '<div class="req-card">' +
+                                '<div class="req-icon" aria-hidden="true"><span aria-hidden="true">' + (v.thumb || '🤝') + '</span></div>' +
+                                '<div class="req-card-main">' +
+                                    '<div>' +
+                                        '<div class="req-title">' + (v.title || '') + '</div>' +
+                                        '<div class="req-author">' + (v.chatWith || '主催者') + '</div>' +
+                                    '</div>' +
+                                    '<div class="req-meta" aria-label="日時・場所・人数">' +
+                                        '<span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>' + (v.dateTimeText || v.when || '') + '</span>' +
+                                        '<span class="req-meta-item"><span class="ic" aria-hidden="true">📍</span>' + placeLabel + '</span>' +
+                                        '<span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>' + ((remaining === null) ? '残り枠: －' : ('残り' + remaining + '枠')) + '</span>' +
+                                    '</div>' +
+                                    '<div class="req-tags" aria-label="タグ">' +
+                                        (tags.length ? tags.map(function (t) { return '<span class="req-tag">' + t + '</span>'; }).join('') : '') +
+                                    '</div>' +
+                                '</div>' +
                             '</div>';
 
                         card.addEventListener('click', function () { openDetail(v.id); });
@@ -2091,7 +2311,8 @@
             var requestFab = document.getElementById('requestFab');
             if (requestFab) {
                 requestFab.addEventListener('click', function () {
-                    showSection('request', null);
+                    document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+                    navigateTo('request');
                 });
             }
 
