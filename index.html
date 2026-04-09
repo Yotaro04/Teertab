@@ -86,7 +86,7 @@
             gap: 8px;
             padding: 10px 12px;
             border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
+            background: transparent;
             min-height: 44px;
             white-space: nowrap;
         }
@@ -107,24 +107,6 @@
             -webkit-background-clip: text;
             background-clip: text;
             color: transparent;
-        }
-        .header-points {
-            display: none;
-            align-items: center;
-            gap: 8px;
-            padding: 10px 12px;
-            border-radius: 999px;
-            background: rgba(255, 255, 255, 0.06);
-            color: var(--text-main);
-            font-size: 13px;
-            font-weight: 900;
-            letter-spacing: 0.02em;
-            min-height: 44px;
-            line-height: 1;
-            white-space: nowrap;
-        }
-        .app-shell[data-tab="home"] .header-points {
-            display: inline-flex;
         }
         .app-shell[data-tab="home"] .header-settings-btn {
             display: none;
@@ -441,7 +423,7 @@
             display: block;
         }
 
-        /* Home feed card layout (avatar top-left / image right / title + tags only) */
+        /* Home feed card layout (minimal meta row + extra tags) */
         .home-card-row {
             display: flex;
             gap: 12px;
@@ -451,18 +433,64 @@
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: rgba(255, 255, 255, 0.06);
+            background: rgba(66, 230, 210, 0.14);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             flex-shrink: 0;
         }
+        .home-avatar--teal { background: rgba(66, 230, 210, 0.14); color: var(--primary); }
+        .home-avatar--amber { background: rgba(255, 209, 102, 0.14); color: #ffd166; }
+        .home-avatar--pink { background: rgba(255, 107, 203, 0.14); color: #ff6bcb; }
+        .home-avatar--blue { background: rgba(90, 169, 255, 0.14); color: #5aa9ff; }
+        .home-avatar--lime { background: rgba(29, 185, 84, 0.16); color: #3eea8f; }
+
         .home-center {
             flex: 1;
             min-width: 0;
             padding-top: 2px;
         }
+        .home-title-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+        }
+        .home-date-badge {
+            flex: 0 0 auto;
+            font-size: 12px;
+            font-weight: 950;
+            letter-spacing: 0.02em;
+            padding: 6px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            line-height: 1;
+            white-space: nowrap;
+            margin-top: 2px;
+        }
+        .home-date-badge--today { background: rgba(66, 230, 210, 0.16); color: var(--primary); }
+        .home-date-badge--tomorrow { background: rgba(255, 209, 102, 0.14); color: #ffd166; }
+
+        .home-meta-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 8px;
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 850;
+            letter-spacing: 0.01em;
+        }
+        .home-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .home-meta-ic { opacity: 0.9; }
+
         .home-tag-row {
             display: flex;
             flex-wrap: wrap;
@@ -479,23 +507,19 @@
             font-weight: 900;
             white-space: nowrap;
         }
+        .home-tag-row--extra { margin-top: 10px; }
+        .home-tag--muted {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-sub);
+        }
         .home-title {
             font-weight: 950;
-            margin-top: 10px;
+            margin-top: 0;
             line-height: 1.2;
             font-size: 1.03rem;
+            min-width: 0;
         }
-        .home-rightimg {
-            width: 72px;
-            height: 72px;
-            border-radius: 16px;
-            background: rgba(66, 230, 210, 0.08);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.55rem;
-            flex-shrink: 0;
-        }
+        /* home-rightimg removed (post-style) */
 
         /* home-top-dot removed (use header dot) */
         @keyframes fadeIn {
@@ -883,6 +907,81 @@
             gap: 10px;
             margin-top: 12px;
         }
+        .detail-meta-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+            color: var(--text-sub);
+            font-size: 12px;
+            font-weight: 850;
+        }
+        .detail-meta {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            white-space: nowrap;
+        }
+        .detail-meta-ic { opacity: 0.9; }
+        .detail-section {
+            margin-top: 14px;
+        }
+        .detail-bullets {
+            margin: 10px 0 0;
+            padding-left: 18px;
+            color: #eaeaea;
+            line-height: 1.6;
+            font-size: 0.95rem;
+        }
+        .detail-bullets li { margin: 6px 0; }
+        .detail-badges {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .detail-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-main);
+            font-size: 12px;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+        .detail-badge--good { background: rgba(66, 230, 210, 0.14); color: var(--primary); }
+        .detail-cta-bar {
+            position: fixed;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: var(--app-max);
+            bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
+            padding: 10px 12px calc(10px + env(safe-area-inset-bottom, 0px));
+            background: rgba(0, 0, 0, 0.72);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            z-index: 260;
+            display: none;
+        }
+        .app-shell[data-tab="detail"] .detail-cta-bar { display: block; }
+        .detail-cta-actions { display: flex; gap: 10px; }
+        .detail-cta-actions .btn { min-height: 52px; border-radius: 18px; }
+        .detail-cta-actions .btn.btn-primary { flex: 2; font-size: 16px; font-weight: 950; }
+        .detail-cta-actions .btn.btn-secondary { flex: 1; background: rgba(255, 255, 255, 0.08); }
+        .detail-cta-note {
+            margin-top: 8px;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 12px;
+            line-height: 1.4;
+            font-weight: 750;
+            text-align: center;
+        }
+        .app-shell[data-tab="detail"] #detail.content-section.active {
+            padding-bottom: calc(140px + env(safe-area-inset-bottom, 0px));
+        }
         .btn {
             display: inline-flex;
             align-items: center;
@@ -1094,7 +1193,7 @@
                     <circle cx="16" cy="18" r="2" stroke="currentColor" stroke-width="2"/>
                 </svg>
             </button>
-            <div class="header-points" id="headerPoints" aria-label="持ってるポイント">0pt</div>
+            <div style="width:44px;height:44px;" aria-hidden="true"></div>
         </div>
         <div class="header-main">
             <div class="header-home-dot" aria-hidden="true"></div>
@@ -1162,13 +1261,13 @@
                             <input type="hidden" id="req-duration" name="duration" value="60">
                         </div>
                         <div>
-                            <span class="tag">付与ポイント</span>
-                            <div class="preset-row" role="group" aria-label="付与ポイント">
-                                <button type="button" class="preset is-active" data-preset-points="10">10pt</button>
-                                <button type="button" class="preset" data-preset-points="20">20pt</button>
-                                <button type="button" class="preset" data-preset-points="30">30pt</button>
+                            <span class="tag">付与ありがとう</span>
+                            <div class="preset-row" role="group" aria-label="付与ありがとう">
+                                <button type="button" class="preset is-active" data-preset-thanks="10">10ありがとう</button>
+                                <button type="button" class="preset" data-preset-thanks="20">20ありがとう</button>
+                                <button type="button" class="preset" data-preset-thanks="30">30ありがとう</button>
                             </div>
-                            <input type="hidden" id="req-points" name="points" value="10">
+                            <input type="hidden" id="req-thanks" name="thanks" value="10">
                         </div>
                     </div>
 
@@ -1206,104 +1305,116 @@
         <div class="home-cards">
             <div class="card card-clickable" data-open-detail="vol-1">
                 <div class="home-card-row">
-                    <div class="home-avatar" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール">品</div>
+                    <div class="home-avatar home-avatar--teal" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🎧</span></div>
                     <div class="home-center">
-                        <div class="home-title">品川BP: 空間音響プロデュース</div>
-                        <div class="home-tag-row">
-                            <span class="home-tag">今日</span>
-                            <span class="home-tag">1/3人</span>
-                            <span class="home-tag">60分</span>
-                            <span class="home-tag">オンライン</span>
-                            <span class="home-tag">10pt</span>
-                            <span class="home-tag">初心者OK</span>
+                        <div class="home-title-row">
+                            <div class="home-title">品川BP: 空間音響プロデュース</div>
+                            <span class="home-date-badge home-date-badge--today">今日</span>
+                        </div>
+                        <div class="home-meta-row" aria-label="概要">
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り2枠</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>オンライン</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>60分</span>
+                        </div>
+                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
+                            <span class="home-tag home-tag--muted">初心者歓迎</span>
                         </div>
                     </div>
-                    <div class="home-rightimg" aria-hidden="true">🎧</div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-2">
                 <div class="home-card-row">
-                    <div class="home-avatar" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール">地</div>
+                    <div class="home-avatar home-avatar--blue" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🗺️</span></div>
                     <div class="home-center">
-                        <div class="home-title">深夜の地図作成ボランティア</div>
-                        <div class="home-tag-row">
-                            <span class="home-tag">今日</span>
-                            <span class="home-tag">2/3人</span>
-                            <span class="home-tag">90分</span>
-                            <span class="home-tag">リモート</span>
-                            <span class="home-tag">15pt</span>
-                            <span class="home-tag">経験者歓迎</span>
+                        <div class="home-title-row">
+                            <div class="home-title">深夜の地図作成ボランティア</div>
+                            <span class="home-date-badge home-date-badge--today">今日</span>
+                        </div>
+                        <div class="home-meta-row" aria-label="概要">
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り1枠</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>オンライン</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>90分</span>
+                        </div>
+                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
+                            <span class="home-tag home-tag--muted">経験者歓迎</span>
                         </div>
                     </div>
-                    <div class="home-rightimg" aria-hidden="true">🗺️</div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-3">
                 <div class="home-card-row">
-                    <div class="home-avatar" role="button" tabindex="0" data-open-organizer="児童館スタッフ" aria-label="児童館スタッフのプロフィール">児</div>
+                    <div class="home-avatar home-avatar--amber" role="button" tabindex="0" data-open-organizer="児童館スタッフ" aria-label="児童館スタッフのプロフィール"><span aria-hidden="true">🎹</span></div>
                     <div class="home-center">
-                        <div class="home-title">児童館ピアノ伴奏（土曜午後）</div>
-                        <div class="home-tag-row">
-                            <span class="home-tag">明日</span>
-                            <span class="home-tag">1/2人</span>
-                            <span class="home-tag">60分</span>
-                            <span class="home-tag">現地</span>
-                            <span class="home-tag">8pt</span>
-                            <span class="home-tag">初心者OK</span>
+                        <div class="home-title-row">
+                            <div class="home-title">児童館ピアノ伴奏（土曜午後）</div>
+                            <span class="home-date-badge home-date-badge--tomorrow">明日</span>
+                        </div>
+                        <div class="home-meta-row" aria-label="概要">
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り1枠</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>現地</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>60分</span>
+                        </div>
+                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
+                            <span class="home-tag home-tag--muted">初心者歓迎</span>
                         </div>
                     </div>
-                    <div class="home-rightimg" aria-hidden="true">🎹</div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-4">
                 <div class="home-card-row">
-                    <div class="home-avatar" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール">河</div>
+                    <div class="home-avatar home-avatar--lime" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🧤</span></div>
                     <div class="home-center">
-                        <div class="home-title">河川敷クリーンアップ＆記録</div>
-                        <div class="home-tag-row">
-                            <span class="home-tag">今週末</span>
-                            <span class="home-tag">4/6人</span>
-                            <span class="home-tag">120分</span>
-                            <span class="home-tag">現地</span>
-                            <span class="home-tag">12pt</span>
-                            <span class="home-tag">体力ある方歓迎</span>
+                        <div class="home-title-row">
+                            <div class="home-title">河川敷クリーンアップ＆記録</div>
+                        </div>
+                        <div class="home-meta-row" aria-label="概要">
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り2枠</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>現地</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>120分</span>
+                        </div>
+                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
+                            <span class="home-tag home-tag--muted">体力ある方歓迎</span>
+                            <span class="home-tag home-tag--muted">今週末</span>
                         </div>
                     </div>
-                    <div class="home-rightimg" aria-hidden="true">🧤</div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-5">
                 <div class="home-card-row">
-                    <div class="home-avatar" role="button" tabindex="0" data-open-organizer="字幕チーム" aria-label="字幕チームのプロフィール">文</div>
+                    <div class="home-avatar home-avatar--pink" role="button" tabindex="0" data-open-organizer="字幕チーム" aria-label="字幕チームのプロフィール"><span aria-hidden="true">💬</span></div>
                     <div class="home-center">
-                        <div class="home-title">字幕付き動画の校正ボランティア</div>
-                        <div class="home-tag-row">
-                            <span class="home-tag">土日</span>
-                            <span class="home-tag">3/4人</span>
-                            <span class="home-tag">45分</span>
-                            <span class="home-tag">リモート</span>
-                            <span class="home-tag">10pt</span>
-                            <span class="home-tag">ライティングOK</span>
+                        <div class="home-title-row">
+                            <div class="home-title">字幕付き動画の校正ボランティア</div>
+                        </div>
+                        <div class="home-meta-row" aria-label="概要">
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り1枠</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>オンライン</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>45分</span>
+                        </div>
+                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
+                            <span class="home-tag home-tag--muted">ライティングOK</span>
+                            <span class="home-tag home-tag--muted">土日</span>
                         </div>
                     </div>
-                    <div class="home-rightimg" aria-hidden="true">💬</div>
                 </div>
             </div>
             <div class="card card-clickable" data-open-detail="vol-6">
                 <div class="home-card-row">
-                    <div class="home-avatar" role="button" tabindex="0" data-open-organizer="地域FM" aria-label="地域FMのプロフィール">FM</div>
+                    <div class="home-avatar home-avatar--teal" role="button" tabindex="0" data-open-organizer="地域FM" aria-label="地域FMのプロフィール"><span aria-hidden="true">🎨</span></div>
                     <div class="home-center">
-                        <div class="home-title">地域FM番組のロゴリフレッシュ</div>
-                        <div class="home-tag-row">
-                            <span class="home-tag">今月</span>
-                            <span class="home-tag">2/3人</span>
-                            <span class="home-tag">2日</span>
-                            <span class="home-tag">オンライン</span>
-                            <span class="home-tag">20pt</span>
-                            <span class="home-tag">デザインできる方</span>
+                        <div class="home-title-row">
+                            <div class="home-title">地域FM番組のロゴリフレッシュ</div>
+                        </div>
+                        <div class="home-meta-row" aria-label="概要">
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">👥</span>残り1枠</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">📍</span>オンライン</span>
+                            <span class="home-meta"><span class="home-meta-ic" aria-hidden="true">🕒</span>2日</span>
+                        </div>
+                        <div class="home-tag-row home-tag-row--extra" aria-label="その他タグ">
+                            <span class="home-tag home-tag--muted">デザインできる方</span>
+                            <span class="home-tag home-tag--muted">今月</span>
                         </div>
                     </div>
-                    <div class="home-rightimg" aria-hidden="true">🎨</div>
                 </div>
             </div>
         </div>
@@ -1314,7 +1425,7 @@
             <div class="search-filters">
                 <button type="button" class="pill" id="filterNear" aria-pressed="true">📍 近く</button>
                 <button type="button" class="pill" id="filterThisWeek" aria-pressed="true">🗓 今週</button>
-                <button type="button" class="pill" id="filterRemote" aria-pressed="false">💻 リモート可</button>
+                <button type="button" class="pill" id="filterRemote" aria-pressed="false">💻 オンライン可</button>
             </div>
             <label class="tag" for="search-q">キーワード</label>
             <input type="text" id="search-q" placeholder="例: 清掃 / ピアノ / 週末">
@@ -1325,22 +1436,57 @@
         <div class="detail-hero" aria-hidden="true"></div>
         <div class="card">
             <span class="tag" id="detailTag">New</span>
-            <div style="font-weight: 900; font-size: 1.08rem; margin-top: 6px;" id="detailTitle">深夜の地図作成ボランティア</div>
-            <div style="color: var(--text-sub); font-size: 0.92rem; margin-top: 10px; line-height: 1.55;" id="detailDesc">消えゆく街の構造を、今のうちに記録せよ。地図にメモを残しながら散歩できる人歓迎。作業は1時間から。</div>
-            <div style="margin-top: 12px;" class="row">
-                <span class="pill">📍 <span id="detailPlace">品川 / リモート可</span></span>
-                <span class="pill">🗓 <span id="detailWhen">今週末</span></span>
+            <div style="font-weight: 950; font-size: 1.1rem; margin-top: 6px; line-height: 1.25;" id="detailTitle">深夜の地図作成ボランティア</div>
+            <div class="detail-meta-grid" aria-label="参加条件">
+                <span class="detail-meta"><span class="detail-meta-ic" aria-hidden="true">👥</span><span id="detailMetaSlots">残り1枠</span></span>
+                <span class="detail-meta"><span class="detail-meta-ic" aria-hidden="true">📍</span><span id="detailMetaPlace">オンライン</span></span>
+                <span class="detail-meta"><span class="detail-meta-ic" aria-hidden="true">🕒</span><span id="detailMetaDuration">90分</span></span>
+                <span class="detail-meta"><span class="detail-meta-ic" aria-hidden="true">📅</span><span id="detailMetaDateTime">今日 22:30〜</span></span>
             </div>
-            <div class="detail-actions">
-                <button type="button" class="btn btn-primary" id="joinBtn">参加する</button>
-                <button type="button" class="btn" id="detailDmBtn">DMする</button>
+
+            <div class="detail-section">
+                <div class="tag">内容</div>
+                <div id="detailDesc" style="display:none;">placeholder</div>
+                <div style="margin-top: 10px;">
+                    <div style="font-weight: 900; margin-top: 10px;">何をするのか</div>
+                    <ul class="detail-bullets" id="detailWhat"></ul>
+                    <div style="font-weight: 900; margin-top: 14px;">どんな人が向いているか</div>
+                    <ul class="detail-bullets" id="detailWho"></ul>
+                    <div style="font-weight: 900; margin-top: 14px;">準備するもの</div>
+                    <ul class="detail-bullets" id="detailPrep"></ul>
+                </div>
+            </div>
+
+            <div class="detail-badges" aria-label="安心情報">
+                <span class="detail-badge detail-badge--good" id="detailBeginner">初心者歓迎</span>
+                <span class="detail-badge">キャンセル可能</span>
+                <span class="detail-badge">質問だけでもOK</span>
             </div>
         </div>
         <div class="card">
             <div class="tag">主催者</div>
-            <div style="font-weight: 800; margin-top: 8px;">品川コミュニティ</div>
-            <div style="color: var(--text-sub); font-size: 0.9rem; margin-top: 6px;">返信目安: 24時間以内（お試し）</div>
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:10px; margin-top: 8px;">
+                <div style="min-width:0;">
+                    <div style="font-weight: 900;" id="detailOrganizerName">品川コミュニティ</div>
+                    <div style="color: var(--text-sub); font-size: 0.9rem; margin-top: 6px;" id="detailOrganizerReply">返信目安: 24時間以内</div>
+                </div>
+                <div style="text-align:right; flex:0 0 auto;">
+                    <div style="color:#ffd166; font-weight: 950; letter-spacing: 0.06em; line-height: 1;">★★★★★</div>
+                    <div style="color: var(--text-sub); font-weight: 900; margin-top: 6px; font-size: 0.9rem;"><span id="detailOrganizerRating">4.8</span> <span style="color:#6a6a6a;" id="detailOrganizerRatingCount">(30)</span></div>
+                </div>
+            </div>
+            <div class="detail-badges" style="margin-top: 12px;">
+                <span class="detail-badge">実績 <span id="detailOrganizerThanks">24</span>ありがとう</span>
+                <span class="detail-badge">本人確認（デモ）</span>
+            </div>
         </div>
+    </div>
+    <div class="detail-cta-bar" id="detailCtaBar" role="region" aria-label="参加アクション">
+        <div class="detail-cta-actions">
+            <button type="button" class="btn btn-primary" id="joinBtn">参加する</button>
+            <button type="button" class="btn btn-secondary" id="detailDmBtn">DMする</button>
+        </div>
+        <div class="detail-cta-note">キャンセル可能・質問だけでもOK</div>
     </div>
     <div id="dm" class="content-section">
         <div class="list" id="dmThreads"></div>
@@ -1367,14 +1513,10 @@
         <div class="account-profile">
             <div class="account-avatar" aria-hidden="true">⚡</div>
             <div class="account-name">白石 太郎</div>
-            <div class="profile-balance-row" aria-label="ポイントとありがとう">
-                <div class="profile-balance-pill" aria-label="持ってるポイント">
-                    <span class="profile-balance-label">ポイント</span>
-                    <span class="profile-balance-value" id="accountPointsBalance">1,240pt</span>
-                </div>
+            <div class="profile-balance-row" aria-label="ありがとう">
                 <div class="profile-balance-pill" aria-label="ありがとう">
                     <span class="profile-balance-label">ありがとう</span>
-                    <span class="profile-balance-value thanks-gradient" id="accountThanksCount">52</span>
+                    <span class="profile-balance-value thanks-gradient" id="accountThanksCount">10</span>
                 </div>
             </div>
             <div class="account-block account-bio">
@@ -1434,15 +1576,15 @@
             currentDetailId: 'vol-2',
             currentChatWith: '',
             currentOrganizerName: '',
-            profile: { pointsReceived: 1240, pointsPaid: 0, thanksCount: 52 },
+            profile: { thanksCount: 10 },
             filters: { near: true, thisWeek: true, remote: false, q: '' },
             vols: {
-                'vol-1': { id: 'vol-1', thumb: '🎧', tag: '98% Match', title: '品川BP: 空間音響プロデュース', desc: '21歳男性の感性と共鳴する重低音を求む。空間音響の設計と現場の段取りに強い人歓迎。', place: '品川', when: '今月', near: true, thisWeek: false, remote: false, chatWith: '品川コミュニティ' },
-                'vol-2': { id: 'vol-2', thumb: '🗺️', tag: 'New', title: '深夜の地図作成ボランティア', desc: '消えゆく街の構造を、今のうちに記録せよ。地図にメモを残しながら散歩できる人歓迎。作業は1時間から。', place: 'リモート可', when: '今週', near: false, thisWeek: true, remote: true, chatWith: '品川コミュニティ' },
-                'vol-3': { id: 'vol-3', thumb: '🎹', tag: '近くで募集中', title: '児童館ピアノ伴奏（土曜午後）', desc: '定番曲中心。楽譜はこちらで用意します。テンポ感が作れる人だと助かります。', place: '児童館', when: '土曜', near: true, thisWeek: true, remote: false, chatWith: '児童館スタッフ' },
-                'vol-4': { id: 'vol-4', thumb: '🧤', tag: '週末', title: '河川敷クリーンアップ＆記録', desc: 'ゴミ拾いと定点写真。作業後に軽食あり。無理なく2〜4時間でOK。', place: '河川敷', when: '今週末', near: true, thisWeek: true, remote: false, chatWith: '品川コミュニティ' },
-                'vol-5': { id: 'vol-5', thumb: '💬', tag: 'リモート可', title: '字幕付き動画の校正ボランティア', desc: '聞き取りに自信がある方歓迎。1本30分目安。誤字チェック中心です。', place: 'オンライン', when: 'いつでも', near: false, thisWeek: false, remote: true, chatWith: '字幕チーム' },
-                'vol-6': { id: 'vol-6', thumb: '🎨', tag: 'スキル募集', title: '地域FM番組のロゴリフレッシュ', desc: 'シンプルで温かいトーン希望。納品はデータのみ。ラフ提案からOK。', place: 'オンライン', when: '今月', near: false, thisWeek: false, remote: true, chatWith: '地域FM' }
+                'vol-1': { id: 'vol-1', thumb: '🎧', tag: '98% Match', title: '品川BP: 空間音響プロデュース', desc: '21歳男性の感性と共鳴する重低音を求む。空間音響の設計と現場の段取りに強い人歓迎。', place: '品川', when: '今月', near: true, thisWeek: false, remote: false, chatWith: '品川コミュニティ', capacity: 3, joined: 1, durationText: '60分', dateBadge: '今日', dateTimeText: '今日 20:00〜', tags: ['初心者歓迎'], details: { what: ['空間音響の設計・段取りのサポート'], who: ['音響やイベント運営に興味がある人'], prep: ['特になし（イヤホンがあると便利）'] } },
+                'vol-2': { id: 'vol-2', thumb: '🗺️', tag: 'New', title: '深夜の地図作成ボランティア', desc: '消えゆく街の構造を、今のうちに記録せよ。地図にメモを残しながら散歩できる人歓迎。作業は1時間から。', place: 'オンライン可', when: '今週', near: false, thisWeek: true, remote: true, chatWith: '品川コミュニティ', capacity: 3, joined: 2, durationText: '90分', dateBadge: '今日', dateTimeText: '今日 22:30〜', tags: ['経験者歓迎', '質問だけでもOK'], details: { what: ['地図を見ながら、街の情報をメモして共有'], who: ['観察が好き / コツコツ作業が得意な人'], prep: ['スマホまたはPC'] } },
+                'vol-3': { id: 'vol-3', thumb: '🎹', tag: '近くで募集中', title: '児童館ピアノ伴奏（土曜午後）', desc: '定番曲中心。楽譜はこちらで用意します。テンポ感が作れる人だと助かります。', place: '児童館', when: '土曜', near: true, thisWeek: true, remote: false, chatWith: '児童館スタッフ', capacity: 2, joined: 1, durationText: '60分', dateBadge: '明日', dateTimeText: '明日 14:00〜', tags: ['初心者歓迎'], details: { what: ['子ども向け曲の簡単な伴奏'], who: ['初見でも落ち着いて弾ける人'], prep: ['手元用の楽譜（あれば）'] } },
+                'vol-4': { id: 'vol-4', thumb: '🧤', tag: '週末', title: '河川敷クリーンアップ＆記録', desc: 'ゴミ拾いと定点写真。作業後に軽食あり。無理なく2〜4時間でOK。', place: '河川敷', when: '今週末', near: true, thisWeek: true, remote: false, chatWith: '品川コミュニティ', capacity: 6, joined: 4, durationText: '120分', dateBadge: '', dateTimeText: '今週末 10:00〜', tags: ['体力ある方歓迎', 'キャンセル可能'], details: { what: ['ゴミ拾いと定点写真の記録'], who: ['屋外作業ができる人（無理なくでOK）'], prep: ['動きやすい服 / 軍手（あれば）'] } },
+                'vol-5': { id: 'vol-5', thumb: '💬', tag: 'オンライン可', title: '字幕付き動画の校正ボランティア', desc: '聞き取りに自信がある方歓迎。1本30分目安。誤字チェック中心です。', place: 'オンライン', when: 'いつでも', near: false, thisWeek: false, remote: true, chatWith: '字幕チーム', capacity: 4, joined: 3, durationText: '45分', dateBadge: '', dateTimeText: 'いつでも（相談）', tags: ['ライティングOK', '質問だけでもOK'], details: { what: ['字幕の誤字脱字チェック'], who: ['文章チェックが得意な人'], prep: ['PC推奨（スマホでも可）'] } },
+                'vol-6': { id: 'vol-6', thumb: '🎨', tag: 'スキル募集', title: '地域FM番組のロゴリフレッシュ', desc: 'シンプルで温かいトーン希望。納品はデータのみ。ラフ提案からOK。', place: 'オンライン', when: '今月', near: false, thisWeek: false, remote: true, chatWith: '地域FM', capacity: 3, joined: 2, durationText: '2日', dateBadge: '', dateTimeText: '今月中（相談）', tags: ['デザインできる方', 'キャンセル可能'], details: { what: ['番組ロゴのリフレッシュ提案'], who: ['ロゴ/タイポが好きな人'], prep: ['制作環境（任意）'] } }
             },
             threads: [
                 { with: '品川コミュニティ', avatar: '品', unread: true, lastAt: '2分前', messages: [
@@ -1458,7 +1600,7 @@
             history: [
                 { title: '河川敷クリーンアップ＆記録', meta: '2026年3月 · 品川周辺 · 4時間' },
                 { title: '児童館ピアノ伴奏（土曜午後）', meta: '2026年2月 · 月2回 · 計6時間' },
-                { title: '字幕付き動画の校正ボランティア', meta: '2026年1月 · リモート · 3本' }
+                { title: '字幕付き動画の校正ボランティア', meta: '2026年1月 · オンライン · 3本' }
             ]
         };
 
@@ -1484,18 +1626,7 @@
             else t.textContent = '検索';
         }
 
-        function getPointsBalance() {
-            var received = (state.profile && typeof state.profile.pointsReceived === 'number') ? state.profile.pointsReceived : 0;
-            var paid = (state.profile && typeof state.profile.pointsPaid === 'number') ? state.profile.pointsPaid : 0;
-            return received - paid;
-        }
-
-        function updateHeaderPoints() {
-            var el = document.getElementById('headerPoints');
-            if (!el) return;
-            var val = getPointsBalance();
-            el.textContent = val.toLocaleString() + 'pt';
-        }
+        function updateHeaderPoints() { /* removed (thanks only) */ }
 
         function renderHistoryCards(containerEl, historyItems) {
             if (!containerEl) return;
@@ -1526,12 +1657,13 @@
 
                 card.innerHTML =
                     '<div class="home-card-row">' +
-                        '<div class="home-avatar" aria-hidden="true">' + avatar + '</div>' +
+                        '<div class="home-avatar home-avatar--teal" aria-hidden="true"><span aria-hidden="true">🕘</span></div>' +
                         '<div class="home-center">' +
-                            '<div class="home-tag-row">' + tags.slice(0, 6).map(function (t) { return '<span class="home-tag">' + t + '</span>'; }).join('') + '</div>' +
-                            '<div class="home-title">' + (h.title || '') + '</div>' +
+                            '<div class="home-title-row">' +
+                                '<div class="home-title">' + (h.title || '') + '</div>' +
+                            '</div>' +
+                            '<div class="home-tag-row home-tag-row--extra" style="margin-top:8px;">' + tags.slice(0, 4).map(function (t) { return '<span class="home-tag home-tag--muted">' + t + '</span>'; }).join('') + '</div>' +
                         '</div>' +
-                        '<div class="home-rightimg" aria-hidden="true">' + right + '</div>' +
                     '</div>';
                 containerEl.appendChild(card);
             });
@@ -1595,13 +1727,67 @@
             var tag = document.getElementById('detailTag');
             var title = document.getElementById('detailTitle');
             var desc = document.getElementById('detailDesc');
-            var place = document.getElementById('detailPlace');
-            var when = document.getElementById('detailWhen');
             if (tag) tag.textContent = d.tag;
             if (title) title.textContent = d.title;
             if (desc) desc.textContent = d.desc;
-            if (place) place.textContent = d.place;
-            if (when) when.textContent = d.when;
+
+            var slotsEl = document.getElementById('detailMetaSlots');
+            var placeEl = document.getElementById('detailMetaPlace');
+            var durEl = document.getElementById('detailMetaDuration');
+            var dtEl = document.getElementById('detailMetaDateTime');
+
+            var remaining = (typeof d.capacity === 'number' && typeof d.joined === 'number') ? Math.max(0, d.capacity - d.joined) : null;
+            if (slotsEl) slotsEl.textContent = (remaining === null) ? '残り枠: －' : ('残り' + remaining + '枠');
+            if (placeEl) placeEl.textContent = (d.remote ? 'オンライン' : '現地');
+            if (durEl) durEl.textContent = d.durationText || d.when || '';
+            if (dtEl) dtEl.textContent = d.dateTimeText || d.when || '';
+
+            function fillList(listId, items) {
+                var ul = document.getElementById(listId);
+                if (!ul) return;
+                ul.innerHTML = '';
+                (items || []).forEach(function (t) {
+                    var li = document.createElement('li');
+                    li.textContent = t;
+                    ul.appendChild(li);
+                });
+                if (!ul.children.length) {
+                    var li = document.createElement('li');
+                    li.textContent = '（特になし）';
+                    ul.appendChild(li);
+                }
+            }
+            fillList('detailWhat', d.details && d.details.what);
+            fillList('detailWho', d.details && d.details.who);
+            fillList('detailPrep', d.details && d.details.prep);
+
+            var beginnerEl = document.getElementById('detailBeginner');
+            if (beginnerEl) {
+                var hasBeginner = (d.tags || []).some(function (t) { return String(t).indexOf('初心者') !== -1; });
+                beginnerEl.style.display = hasBeginner ? 'inline-flex' : 'none';
+            }
+
+            var orgName = document.getElementById('detailOrganizerName');
+            if (orgName) orgName.textContent = d.chatWith || '主催者';
+
+            var orgThanks = document.getElementById('detailOrganizerThanks');
+            var orgRating = document.getElementById('detailOrganizerRating');
+            var orgRatingCount = document.getElementById('detailOrganizerRatingCount');
+            var orgReply = document.getElementById('detailOrganizerReply');
+
+            var stats = {
+                '品川コミュニティ': { thanksCount: 24, rating: '4.8', ratingCount: '(30)', reply: '返信目安: 24時間以内' },
+                '児童館スタッフ': { thanksCount: 16, rating: '4.7', ratingCount: '(18)', reply: '返信目安: 当日中' },
+                '字幕チーム': { thanksCount: 9, rating: '4.6', ratingCount: '(12)', reply: '返信目安: 24時間以内' },
+                '地域FM': { thanksCount: 13, rating: '4.9', ratingCount: '(9)', reply: '返信目安: 48時間以内' },
+                '主催者': { thanksCount: 20, rating: '4.8', ratingCount: '(20)', reply: '返信目安: 24時間以内' }
+            };
+            var s = stats[d.chatWith] || stats['主催者'];
+            if (orgThanks) orgThanks.textContent = String(s.thanksCount);
+            if (orgRating) orgRating.textContent = String(s.rating);
+            if (orgRatingCount) orgRatingCount.textContent = String(s.ratingCount);
+            if (orgReply) orgReply.textContent = String(s.reply);
+
             document.getElementById('detailDmBtn').dataset.chatWith = d.chatWith;
             navigateTo('detail');
         }
@@ -1711,8 +1897,6 @@
         function renderAccount() {
             var thanksCountEl = document.getElementById('accountThanksCount');
             if (thanksCountEl) thanksCountEl.textContent = state.profile.thanksCount.toLocaleString();
-            var pointsBalanceEl = document.getElementById('accountPointsBalance');
-            if (pointsBalanceEl) pointsBalanceEl.textContent = getPointsBalance().toLocaleString() + 'pt';
             updateHeaderPoints();
             var list = document.getElementById('accountHistoryList');
             if (list) renderHistoryCards(list, state.history);
@@ -1752,8 +1936,8 @@
                         var tags = [
                             v.when,
                             remoteLabel,
-                            '10pt',
-                            '初心者OK'
+                            '10ありがとう',
+                            '初心者歓迎'
                         ];
 
                         card.innerHTML =
@@ -1789,7 +1973,6 @@
         }
         function confirmJoin() {
             var v = state.vols[state.currentDetailId] || state.vols['vol-2'];
-            state.profile.pointsReceived += 25;
             // Demo: participant joins -> organizer taps "ありがとう"
             state.profile.thanksCount += 1;
             state.history.unshift({ title: v.title, meta: '2026年4月 · ' + v.place + ' · 参加申請（お試し）' });
@@ -1801,7 +1984,7 @@
             setUnreadFlag();
             renderDmThreads();
             closeJoinModal();
-            showToast('参加申請しました。履歴とポイントに反映！');
+            showToast('参加申請しました。履歴とありがとうに反映！');
         }
 
         (function () {
@@ -1866,12 +2049,12 @@
                 });
             });
 
-            var pointsHidden = document.getElementById('req-points');
-            document.querySelectorAll('[data-preset-points]').forEach(function (btn) {
+            var thanksHidden = document.getElementById('req-thanks');
+            document.querySelectorAll('[data-preset-thanks]').forEach(function (btn) {
                 btn.addEventListener('click', function () {
-                    var val = btn.getAttribute('data-preset-points') || '10';
-                    if (pointsHidden) pointsHidden.value = val;
-                    document.querySelectorAll('[data-preset-points]').forEach(function (b) { b.classList.remove('is-active'); });
+                    var val = btn.getAttribute('data-preset-thanks') || '10';
+                    if (thanksHidden) thanksHidden.value = val;
+                    document.querySelectorAll('[data-preset-thanks]').forEach(function (b) { b.classList.remove('is-active'); });
                     btn.classList.add('is-active');
                 });
             });
