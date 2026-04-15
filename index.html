@@ -22,6 +22,7 @@
             --card-space: 18px;
             --stroke: rgba(255, 255, 255, 0.08);
             --shadow-card: 0 10px 24px rgba(0, 0, 0, 0.35);
+            --home-thumb: 104px;
         }
         *, *::before, *::after { box-sizing: border-box; }
         html {
@@ -73,6 +74,24 @@
             display: flex;
             align-items: center;
             gap: 8px;
+        }
+        .header-brand {
+            display: none;
+            align-items: center;
+            justify-content: flex-start;
+            min-width: 0;
+        }
+        .header-brand-logo {
+            display: block;
+            width: 116px;
+            max-width: 100%;
+            height: auto;
+        }
+        .app-shell[data-tab="home"] .header-brand {
+            display: inline-flex;
+        }
+        .app-shell[data-tab="home"] .header-left-spacer {
+            display: none;
         }
         .header-left-spacer {
             flex: 1;
@@ -140,9 +159,6 @@
             background-clip: text;
             color: transparent;
         }
-        .app-shell[data-tab="home"] .header-settings-btn {
-            display: none;
-        }
         .header-nav-btn {
             width: 44px;
             height: 44px;
@@ -167,43 +183,12 @@
         .app-shell.has-back .header-nav-btn {
             display: inline-flex;
         }
-        .header-settings-btn {
-            width: 44px;
-            height: 44px;
-            padding: 0;
-            border-radius: var(--radius-md);
-            border: none;
-            background: transparent;
-            color: #e8e8e8;
-            display: none;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            touch-action: manipulation;
-            -webkit-appearance: none;
-            appearance: none;
-        }
-        .header-settings-btn:active { opacity: 0.7; }
-        .header-settings-btn svg { width: 22px; height: 22px; }
-        .app-shell[data-tab="account"]:not(.has-back) .header-settings-btn {
-            display: inline-flex;
-        }
         .header-main {
             display: flex;
             justify-content: center;
             align-items: center;
             min-height: 44px;
             justify-self: center;
-        }
-        .header-home-dot {
-            width: 48px;
-            height: 48px;
-            border-radius: 999px;
-            background: var(--primary);
-            display: none;
-        }
-        .app-shell[data-tab="home"] .header-home-dot {
-            display: block;
         }
         .header-cell--right {
             display: flex;
@@ -212,7 +197,6 @@
             min-width: 0;
             gap: 10px;
         }
-        /* removed: header-app-btn (use centered dot instead) */
         .header-action-btn {
             display: none;
             align-items: center;
@@ -263,7 +247,9 @@
             display: inline-flex;
         }
         .app-shell[data-tab="account"] .header-action-btn--dm,
-        .app-shell[data-tab="account"] .header-action-btn--notif {
+        .app-shell[data-tab="account"] .header-action-btn--notif,
+        .app-shell[data-tab="accountProfileEdit"] .header-action-btn--dm,
+        .app-shell[data-tab="accountProfileEdit"] .header-action-btn--notif {
             display: inline-flex;
         }
         .header-icon {
@@ -312,7 +298,8 @@
         .app-shell[data-tab="dm"] .header-generic-title,
         .app-shell[data-tab="notifications"] .header-generic-title,
         .app-shell[data-tab="chat"] .header-generic-title,
-        .app-shell[data-tab="organizer"] .header-generic-title {
+        .app-shell[data-tab="organizer"] .header-generic-title,
+        .app-shell[data-tab="accountProfileEdit"] .header-generic-title {
             display: block;
         }
         .app-shell[data-tab="search"] .header-icon-wrap,
@@ -320,20 +307,67 @@
         .app-shell[data-tab="dm"] .header-icon-wrap,
         .app-shell[data-tab="notifications"] .header-icon-wrap,
         .app-shell[data-tab="chat"] .header-icon-wrap,
-        .app-shell[data-tab="organizer"] .header-icon-wrap {
+        .app-shell[data-tab="organizer"] .header-icon-wrap,
+        .app-shell[data-tab="accountProfileEdit"] .header-icon-wrap {
             display: none;
         }
         .app-shell[data-tab="search"] .header-request-title,
         .app-shell[data-tab="detail"] .header-request-title,
         .app-shell[data-tab="dm"] .header-request-title,
         .app-shell[data-tab="notifications"] .header-request-title,
-        .app-shell[data-tab="chat"] .header-request-title {
+        .app-shell[data-tab="chat"] .header-request-title,
+        .app-shell[data-tab="accountProfileEdit"] .header-request-title {
             display: none;
         }
         /* アカウントプロフィール */
         #account .account-profile {
             padding: 8px 0 28px;
             text-align: center;
+        }
+        .account-avatar-row {
+            position: relative;
+            width: 112px;
+            height: 112px;
+            margin: 4px auto 14px;
+        }
+        #account .account-avatar-row .account-avatar {
+            margin: 0;
+        }
+        .account-profile-edit-btn {
+            position: absolute;
+            right: -8px;
+            bottom: 8px;
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            border: 1px solid #3a3a3a;
+            background: rgba(30, 30, 30, 0.96);
+            color: #8a8a8a;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
+            padding: 0;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
+        }
+        .account-profile-edit-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+        .account-profile-edit-btn:active {
+            opacity: 0.92;
+            background: #2a2a2a;
+            color: #b5b5b5;
+        }
+        .account-profile-edit-screen {
+            text-align: left;
+            padding: 12px 0 28px;
+        }
+        .account-profile-edit-screen > .account-block-title:first-child {
+            margin-top: 0;
         }
         #account .account-avatar,
         #organizer .account-avatar {
@@ -350,11 +384,114 @@
             line-height: 1;
             box-shadow: none;
         }
+        #account .account-avatar.account-avatar--photo {
+            font-size: 0;
+            background-color: #1a1a1a;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .profile-edit-hint {
+            font-size: 0.78rem;
+            color: #888;
+            line-height: 1.55;
+            margin: 0 0 14px;
+        }
+        .profile-edit-label {
+            display: block;
+            font-size: 0.72rem;
+            font-weight: 700;
+            color: var(--text-sub);
+            margin: 12px 0 4px;
+            letter-spacing: 0.04em;
+        }
+        .profile-edit-input,
+        .profile-edit-textarea {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 10px 12px;
+            border-radius: 10px;
+            border: 1px solid #333;
+            background: #141414;
+            color: var(--text-sub);
+            font-size: 0.94rem;
+            font-family: inherit;
+        }
+        .profile-edit-textarea {
+            resize: vertical;
+            min-height: 88px;
+            line-height: 1.5;
+        }
+        .profile-edit-input.profile-edit-emoji {
+            max-width: 140px;
+        }
+        .profile-edit-file {
+            display: block;
+            margin: 4px 0 0;
+            font-size: 0.8rem;
+            color: var(--text-sub);
+        }
+        .profile-photo-preview-wrap {
+            margin: 8px 0 10px;
+            padding: 10px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .profile-photo-preview-label {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .profile-photo-preview-frame {
+            width: 112px;
+            height: 112px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            overflow: hidden;
+            background: #1a1a1a;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        .profile-photo-preview-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+        .profile-photo-preview-frame.has-image .profile-photo-preview-img {
+            display: block;
+        }
+        .profile-photo-preview-empty {
+            font-size: 12px;
+            color: var(--text-sub);
+            text-align: center;
+            line-height: 1.4;
+            padding: 0 8px;
+        }
+        .profile-photo-preview-frame.has-image .profile-photo-preview-empty {
+            display: none;
+        }
+        .profile-edit-clear-photo {
+            margin-top: 8px;
+        }
+        .profile-edit-save {
+            margin-top: 16px;
+            width: 100%;
+        }
         #account .account-name {
             font-size: 1.28rem;
             font-weight: 800;
-            margin: 0 0 14px;
+            margin: 6px 0 2px;
             letter-spacing: 0.02em;
+        }
+        #account .profile-balance-row {
+            margin: -4px 0 16px;
+        }
+        #account .profile-balance-value {
+            font-size: 1.8rem;
         }
         #account .account-token-block,
         #organizer .account-token-block {
@@ -463,6 +600,7 @@
         }
         /* Profile screens: wider side padding (card-ish) */
         #account.content-section,
+        #accountProfileEdit.content-section,
         #organizer.content-section {
             padding-left: calc(26px + env(safe-area-inset-left, 0px));
             padding-right: calc(26px + env(safe-area-inset-right, 0px));
@@ -488,6 +626,7 @@
         }
         #request.content-section.active,
         #account.content-section.active,
+        #accountProfileEdit.content-section.active,
         #organizer.content-section.active {
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
@@ -495,28 +634,35 @@
         #home .home-cards .card {
             flex: 0 0 auto;
             width: 100%;
-            aspect-ratio: 16 / 9;
             margin-bottom: 0;
-            display: grid;
-            grid-template-rows: 11fr 9fr;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 12px 10px 14px;
             border-radius: 24px 24px 22px 22px / 20px 20px 24px 24px;
             overflow: hidden;
-            padding: 0;
         }
         #home .home-card-media {
-            width: 100%;
-            min-height: 0;
+            flex: 0 0 var(--home-thumb);
+            width: var(--home-thumb);
+            height: var(--home-thumb);
+            min-width: var(--home-thumb);
+            min-height: var(--home-thumb);
+            border-radius: 16px;
             background: linear-gradient(135deg, rgba(66, 230, 210, 0.3), rgba(66, 230, 210, 0.08)), #202025;
             background-size: cover;
             background-position: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
         #home .home-card-body {
+            flex: 1 1 auto;
+            min-width: 0;
             min-height: 0;
             overflow: hidden;
-            padding: 8px 10px 7px;
+            padding: 2px 0;
         }
-        /* ホーム16:9カード内: 列間・行間を詰めて文字が収まりやすく */
+        /* ホーム横並びカード内: 列間・行間を詰めて文字が収まりやすく */
         #home .home-cards .card .req-card {
             display: flex;
             flex-direction: column;
@@ -755,9 +901,6 @@
             font-size: 1.03rem;
             min-width: 0;
         }
-        /* home-rightimg removed (post-style) */
-
-        /* home-top-dot removed (use header dot) */
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
@@ -895,6 +1038,9 @@
             outline: 2px solid var(--primary);
             outline-offset: 2px;
         }
+        #request {
+            color-scheme: dark;
+        }
         #request .request-form {
             padding-top: 8px;
             padding-bottom: 8px;
@@ -975,6 +1121,38 @@
             width: 100%;
             border: none;
             outline: none;
+            color: var(--text-main);
+        }
+        #request .field input[type="datetime-local"] {
+            color-scheme: dark;
+            -webkit-text-fill-color: var(--text-main);
+            caret-color: var(--primary);
+        }
+        #request .field input[type="datetime-local"]::placeholder {
+            color: rgba(255, 255, 255, 0.45);
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.45);
+        }
+        #request .field input[type="datetime-local"]:-webkit-autofill,
+        #request .field input[type="datetime-local"]:-webkit-autofill:focus {
+            -webkit-text-fill-color: var(--text-main);
+            box-shadow: 0 0 0 1000px rgba(32, 32, 36, 0.95) inset;
+        }
+        #request .field input[type="datetime-local"]::-webkit-datetime-edit,
+        #request .field input[type="datetime-local"]::-webkit-datetime-edit-fields-wrapper {
+            color: var(--text-main);
+        }
+        #request .field input[type="datetime-local"]::-webkit-datetime-edit-text,
+        #request .field input[type="datetime-local"]::-webkit-datetime-edit-month-field,
+        #request .field input[type="datetime-local"]::-webkit-datetime-edit-day-field,
+        #request .field input[type="datetime-local"]::-webkit-datetime-edit-year-field,
+        #request .field input[type="datetime-local"]::-webkit-datetime-edit-hour-field,
+        #request .field input[type="datetime-local"]::-webkit-datetime-edit-minute-field,
+        #request .field input[type="datetime-local"]::-webkit-datetime-edit-ampm-field {
+            color: var(--text-main);
+        }
+        #request .field input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.75;
         }
         #request .field textarea {
             min-height: 88px;
@@ -1253,6 +1431,53 @@
         }
         .notif-row.card-clickable { cursor: pointer; touch-action: manipulation; }
         .notif-row.card-clickable:active { opacity: 0.88; }
+        .notif-list-tools {
+            padding: 0 16px 12px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .notif-list-tools[hidden] {
+            display: none !important;
+        }
+        .notif-list-tools .btn.btn-danger {
+            background: rgba(220, 80, 80, 0.35);
+            color: #fff;
+            font-weight: 850;
+            border-color: transparent;
+        }
+        .notif-list-tools .btn.btn-danger:active {
+            opacity: 0.88;
+        }
+        .notif-row-head {
+            display: flex;
+            flex-direction: row;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+        .notif-row-head .notif-row-top {
+            flex: 1;
+            min-width: 0;
+            margin-bottom: 0;
+        }
+        .notif-dismiss {
+            flex: 0 0 auto;
+            min-width: 44px;
+            min-height: 44px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 80, 80, 0.12);
+            color: #ff8a8a;
+            font-size: 1.15rem;
+            font-weight: 900;
+            line-height: 1;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .notif-dismiss:active { opacity: 0.85; }
         .row {
             display: flex;
             align-items: center;
@@ -1391,6 +1616,16 @@
             padding: 16px 4px 8px;
             text-align: center;
         }
+        #home .home-empty-hint {
+            color: var(--text-sub);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            padding: 24px 14px 12px;
+            text-align: center;
+        }
+        #home .home-empty-hint[hidden] {
+            display: none !important;
+        }
         .detail-page-card {
             padding-top: 14px;
         }
@@ -1479,6 +1714,19 @@
         }
         .detail-page-actions .btn.btn-danger:active {
             opacity: 0.88;
+        }
+        /* 参加ボタンが申請済み／承認済み表示に切り替わったとき */
+        .detail-page-actions #joinBtn.join-btn--status:disabled {
+            opacity: 1;
+        }
+        .detail-page-actions #joinBtn.join-btn--status {
+            flex: 2;
+            cursor: default;
+            font-weight: 950;
+        }
+        .detail-page-actions #joinBtn.join-btn--approved:disabled {
+            background: rgba(66, 230, 210, 0.16);
+            color: var(--primary);
         }
         .detail-host-day {
             margin-top: 18px;
@@ -1615,24 +1863,76 @@
             overflow: hidden;
             text-overflow: ellipsis;
         }
+        .dm-list-tools {
+            padding: 0 16px 12px;
+            display: flex;
+            justify-content: flex-end;
+        }
+        .dm-list-tools[hidden] {
+            display: none !important;
+        }
+        .dm-list-tools .btn.btn-danger {
+            background: rgba(220, 80, 80, 0.35);
+            color: #fff;
+            font-weight: 850;
+            border-color: transparent;
+        }
+        .dm-list-tools .btn.btn-danger:active {
+            opacity: 0.88;
+        }
+        .dm-thread-card {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            gap: 4px;
+        }
+        .dm-thread-card-inner {
+            flex: 1;
+            min-width: 0;
+            cursor: pointer;
+        }
+        .dm-thread-delete {
+            flex: 0 0 auto;
+            min-width: 44px;
+            min-height: 44px;
+            border: none;
+            border-radius: 12px;
+            background: rgba(255, 80, 80, 0.12);
+            color: #ff8a8a;
+            font-size: 1.15rem;
+            font-weight: 900;
+            line-height: 1;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .dm-thread-delete:active { opacity: 0.85; }
         .chat {
             display: flex;
             flex-direction: column;
+            align-items: flex-start;
             gap: 10px;
             padding-top: 8px;
             padding-bottom: 8px;
         }
         .bubble {
             max-width: 82%;
+            width: fit-content;
+            box-sizing: border-box;
             padding: 12px 12px;
-            border-radius: 14px;
+            border-radius: 999px;
             background: #232323;
             border: none;
             line-height: 1.45;
             font-size: 0.95rem;
+            overflow-wrap: anywhere;
+        }
+        .bubble.bubble--multi {
+            border-radius: 14px;
         }
         .bubble.me {
-            margin-left: auto;
+            align-self: flex-end;
             background: rgba(29,185,84,0.14);
             border-color: rgba(29,185,84,0.35);
         }
@@ -1814,18 +2114,12 @@
                     <path d="M15 18l-6-6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
-            <button type="button" class="header-settings-btn" id="settingsBtn" aria-label="設定" title="設定">
-                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                    <path d="M4 6h10M18 6h2M8 6v0M4 12h6M14 12h6M12 12v0M4 18h14M20 18h0M16 18v0" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    <circle cx="8" cy="6" r="2" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="12" cy="12" r="2" stroke="currentColor" stroke-width="2"/>
-                    <circle cx="16" cy="18" r="2" stroke="currentColor" stroke-width="2"/>
-                </svg>
-            </button>
+            <div class="header-brand" aria-label="Teertab">
+                <img src="assets/teertab-logo.png" alt="Teertab" class="header-brand-logo">
+            </div>
             <div class="header-left-spacer" aria-hidden="true"></div>
         </div>
         <div class="header-main">
-            <div class="header-home-dot" aria-hidden="true"></div>
             <div class="header-icon-wrap">
                 <div class="header-icon" role="img" aria-label="アプリ">
                     <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
@@ -1833,7 +2127,7 @@
                     </svg>
                 </div>
             </div>
-            <h1 class="header-request-title">依頼する</h1>
+            <h1 class="header-request-title">募集する</h1>
             <h1 class="header-generic-title" id="headerTitle">検索</h1>
         </div>
         <div class="header-cell--right">
@@ -1854,7 +2148,7 @@
                     <path d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>
-            <button type="button" class="header-request-submit" id="requestHeaderSubmit" aria-label="依頼を送る">依頼</button>
+            <button type="button" class="header-request-submit" id="requestHeaderSubmit" aria-label="募集を送る">募集</button>
         </div>
     </div>
     <div id="request" class="content-section">
@@ -1866,20 +2160,7 @@
                         <input class="req-title-input" type="text" id="req-title" name="title" placeholder="タイトル（例: 週末の河川敷クリーンアップ手伝い）" autocomplete="off" inputmode="text" enterkeyhint="next" autofocus>
                     </div>
                     <div class="req-body">
-                        <div class="upload-block">
-                            <label class="upload-zone" for="req-image-input" id="req-image-zone">
-                                <input class="upload-input" type="file" id="req-image-input" name="image" accept="image/*">
-                                <div class="upload-zone-inner">
-                                    <div class="upload-icon" aria-hidden="true">🖼️</div>
-                                    <div class="upload-hint">画像を追加（任意）</div>
-                                    <img class="upload-preview" id="req-image-preview" alt="選択画像のプレビュー">
-                                </div>
-                            </label>
-                        </div>
-                    </div>
-
-                    <div class="req-body">
-                        <div class="field-stack" aria-label="依頼内容">
+                        <div class="field-stack" aria-label="募集内容">
                             <div class="field" aria-label="日時">
                                 <span class="ic" aria-hidden="true">📅</span>
                                 <input type="datetime-local" id="req-when" name="when">
@@ -1902,15 +2183,27 @@
                                 </div>
                             </div>
 
-                            <div class="field" aria-label="タグ">
-                                <span class="ic" aria-hidden="true">#</span>
-                                <input type="text" id="req-tags" name="tags" placeholder="#タグ（例: #清掃 #週末 #初心者歓迎）" autocomplete="off" inputmode="text">
-                            </div>
-
                             <div class="field field--textarea" aria-label="説明">
                                 <span class="ic" aria-hidden="true">📝</span>
                                 <textarea id="req-desc" name="description" rows="4" placeholder="説明（任意）"></textarea>
                             </div>
+                            <div class="field" aria-label="タグ">
+                                <span class="ic" aria-hidden="true">#</span>
+                                <input type="text" id="req-tags" name="tags" placeholder="#タグ（例: #清掃 #週末 #初心者歓迎）" autocomplete="off" inputmode="text">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="req-body">
+                        <div class="upload-block">
+                            <label class="upload-zone" for="req-image-input" id="req-image-zone">
+                                <input class="upload-input" type="file" id="req-image-input" name="image" accept="image/*">
+                                <div class="upload-zone-inner">
+                                    <div class="upload-icon" aria-hidden="true">🖼️</div>
+                                    <div class="upload-hint">画像を追加（任意）</div>
+                                    <img class="upload-preview" id="req-image-preview" alt="選択画像のプレビュー">
+                                </div>
+                            </label>
                         </div>
                     </div>
 
@@ -1921,142 +2214,7 @@
     </div>
     <div id="home" class="content-section active">
         <div class="home-cards" id="homeCards">
-            <div class="card card-clickable" data-open-detail="vol-1">
-                <div class="home-card-media" aria-hidden="true"></div>
-                <div class="home-card-body">
-                    <div class="req-card">
-                        <div class="req-card-top">
-                        <div class="req-icon" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🎧</span></div>
-                            <div class="req-card-head">
-                                <div class="req-title">品川BP: 空間音響プロデュース</div>
-                                <div class="req-author">品川コミュニティ</div>
-                            </div>
-                        </div>
-                            <div class="req-meta" aria-label="日時・場所・人数">
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>4/11 20:00~</span>
-                                <span class="req-meta-item req-meta-place"><span class="ic" aria-hidden="true">📍</span>東京都港区港南2丁目（品川駅）</span>
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>1/3</span>
-                            </div>
-                            <div class="req-tags" aria-label="タグ">
-                                <span class="req-tag">#初心者歓迎</span>
-                            </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card card-clickable" data-open-detail="vol-2">
-                <div class="home-card-media" aria-hidden="true"></div>
-                <div class="home-card-body">
-                    <div class="req-card">
-                        <div class="req-card-top">
-                        <div class="req-icon" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🗺️</span></div>
-                            <div class="req-card-head">
-                                <div class="req-title">深夜の地図作成ボランティア</div>
-                                <div class="req-author">品川コミュニティ</div>
-                            </div>
-                        </div>
-                            <div class="req-meta" aria-label="日時・場所・人数">
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>4/11 22:30~</span>
-                                <span class="req-meta-item req-meta-place"><span class="ic" aria-hidden="true">📍</span>オンライン</span>
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>2/3</span>
-                            </div>
-                            <div class="req-tags" aria-label="タグ">
-                                <span class="req-tag">#経験者歓迎</span>
-                                <span class="req-tag">#質問だけでもOK</span>
-                            </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card card-clickable" data-open-detail="vol-3">
-                <div class="home-card-media" aria-hidden="true"></div>
-                <div class="home-card-body">
-                    <div class="req-card">
-                        <div class="req-card-top">
-                        <div class="req-icon" role="button" tabindex="0" data-open-organizer="児童館スタッフ" aria-label="児童館スタッフのプロフィール"><span aria-hidden="true">🎹</span></div>
-                            <div class="req-card-head">
-                                <div class="req-title">児童館ピアノ伴奏（土曜午後）</div>
-                                <div class="req-author">児童館スタッフ</div>
-                            </div>
-                        </div>
-                            <div class="req-meta" aria-label="日時・場所・人数">
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>4/12 14:00~</span>
-                                <span class="req-meta-item req-meta-place"><span class="ic" aria-hidden="true">📍</span>東京都品川区西大井2丁目（大崎児童館）</span>
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>1/2</span>
-                            </div>
-                            <div class="req-tags" aria-label="タグ">
-                                <span class="req-tag">#初心者歓迎</span>
-                            </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card card-clickable" data-open-detail="vol-4">
-                <div class="home-card-media" aria-hidden="true"></div>
-                <div class="home-card-body">
-                    <div class="req-card">
-                        <div class="req-card-top">
-                        <div class="req-icon" role="button" tabindex="0" data-open-organizer="品川コミュニティ" aria-label="品川コミュニティのプロフィール"><span aria-hidden="true">🧤</span></div>
-                            <div class="req-card-head">
-                                <div class="req-title">河川敷クリーンアップ＆記録</div>
-                                <div class="req-author">品川コミュニティ</div>
-                            </div>
-                        </div>
-                            <div class="req-meta" aria-label="日時・場所・人数">
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>4/13 10:00~</span>
-                                <span class="req-meta-item req-meta-place"><span class="ic" aria-hidden="true">📍</span>東京都品川区荏原（目黒川河川敷）</span>
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>4/6</span>
-                            </div>
-                            <div class="req-tags" aria-label="タグ">
-                                <span class="req-tag">#体力ある方歓迎</span>
-                                <span class="req-tag">#キャンセル可能</span>
-                            </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card card-clickable" data-open-detail="vol-5">
-                <div class="home-card-media" aria-hidden="true"></div>
-                <div class="home-card-body">
-                    <div class="req-card">
-                        <div class="req-card-top">
-                        <div class="req-icon" role="button" tabindex="0" data-open-organizer="字幕チーム" aria-label="字幕チームのプロフィール"><span aria-hidden="true">💬</span></div>
-                            <div class="req-card-head">
-                                <div class="req-title">字幕付き動画の校正ボランティア</div>
-                                <div class="req-author">字幕チーム</div>
-                            </div>
-                        </div>
-                            <div class="req-meta" aria-label="日時・場所・人数">
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>いつでも（相談）</span>
-                                <span class="req-meta-item req-meta-place"><span class="ic" aria-hidden="true">📍</span>オンライン</span>
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>3/4</span>
-                            </div>
-                            <div class="req-tags" aria-label="タグ">
-                                <span class="req-tag">#ライティングOK</span>
-                                <span class="req-tag">#質問だけでもOK</span>
-                            </div>
-                    </div>
-                </div>
-            </div>
-            <div class="card card-clickable" data-open-detail="vol-6">
-                <div class="home-card-media" aria-hidden="true"></div>
-                <div class="home-card-body">
-                    <div class="req-card">
-                        <div class="req-card-top">
-                        <div class="req-icon" role="button" tabindex="0" data-open-organizer="地域FM" aria-label="地域FMのプロフィール"><span aria-hidden="true">🎨</span></div>
-                            <div class="req-card-head">
-                                <div class="req-title">地域FM番組のロゴリフレッシュ</div>
-                                <div class="req-author">地域FM</div>
-                            </div>
-                        </div>
-                            <div class="req-meta" aria-label="日時・場所・人数">
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">📅</span>今月中（相談）</span>
-                                <span class="req-meta-item req-meta-place"><span class="ic" aria-hidden="true">📍</span>オンライン</span>
-                                <span class="req-meta-item"><span class="ic" aria-hidden="true">👥</span>2/3</span>
-                            </div>
-                            <div class="req-tags" aria-label="タグ">
-                                <span class="req-tag">#デザインできる方</span>
-                                <span class="req-tag">#キャンセル可能</span>
-                            </div>
-                    </div>
-                </div>
-            </div>
+            <div class="home-empty-hint" id="homeEmptyHint">まだ募集がありません。右下の「募集する」から投稿すると、ここに表示されます。</div>
         </div>
     </div>
     <div id="search" class="content-section">
@@ -2077,15 +2235,15 @@
     <div id="detail" class="content-section">
         <div class="card detail-page-card">
             <div id="detailCover" class="detail-cover detail-cover--empty" aria-hidden="true"></div>
-            <div style="font-weight: 950; font-size: 1.12rem; margin-top: 14px; line-height: 1.3;" id="detailTitle">深夜の地図作成ボランティア</div>
+            <div style="font-weight: 950; font-size: 1.12rem; margin-top: 14px; line-height: 1.3;" id="detailTitle"></div>
             <div class="detail-organizer-row">
-                <div class="detail-organizer-ic" id="detailOrganizerIcon" aria-hidden="true"><span>🗺️</span></div>
-                <div class="detail-organizer-name" id="detailOrganizerName">品川コミュニティ</div>
+                <div class="detail-organizer-ic" id="detailOrganizerIcon" aria-hidden="true"><span>🤝</span></div>
+                <div class="detail-organizer-name" id="detailOrganizerName">主催者</div>
             </div>
             <div class="detail-meta-grid" aria-label="日時・場所・人数" style="margin-top: 12px;">
-                <span class="detail-meta"><span class="detail-meta-ic" aria-hidden="true">📅</span><span id="detailMetaDateTime">4/11 22:30~</span></span>
-                <span class="detail-meta detail-meta--place"><span class="detail-meta-ic" aria-hidden="true">📍</span><span id="detailMetaPlace">オンライン</span></span>
-                <span class="detail-meta"><span class="detail-meta-ic" aria-hidden="true">👥</span><span id="detailMetaSlots">2/3</span></span>
+                <span class="detail-meta"><span class="detail-meta-ic" aria-hidden="true">📅</span><span id="detailMetaDateTime"></span></span>
+                <span class="detail-meta detail-meta--place"><span class="detail-meta-ic" aria-hidden="true">📍</span><span id="detailMetaPlace"></span></span>
+                <span class="detail-meta"><span class="detail-meta-ic" aria-hidden="true">👥</span><span id="detailMetaSlots"></span></span>
             </div>
             <div id="detailDesc" class="detail-desc"></div>
             <div id="detailTags" class="detail-tags" aria-label="タグ"></div>
@@ -2093,12 +2251,12 @@
                 <button type="button" class="btn btn-primary" id="joinBtn">参加する</button>
                 <button type="button" class="btn btn-secondary" id="detailDmBtn">DMする</button>
             </div>
-            <div class="detail-page-actions" id="detailOwnerActions" hidden role="group" aria-label="依頼の管理">
-                <button type="button" class="btn btn-danger" id="detailDeleteVolBtn">依頼を削除</button>
+            <div class="detail-page-actions" id="detailOwnerActions" hidden role="group" aria-label="募集の管理">
+                <button type="button" class="btn btn-danger" id="detailDeleteVolBtn">募集を削除</button>
             </div>
             <div class="detail-host-day" id="detailHostThanksBlock" hidden>
                 <div class="detail-host-day-title">ボランティア当日</div>
-                <p class="detail-host-day-text">活動が終わったら、承認済みの参加者へ「ありがとう」を送ってください。相手のありがとうが増え、通知でも届きます（お試し）。</p>
+                <p class="detail-host-day-text">活動が終わったら、承認済みの参加者へ「ありがとう」を送ってください。1人あたりいくつ渡すか指定でき、あなたの所持から相手へ移ります。通知でも届きます。</p>
                 <button type="button" class="btn btn-primary" id="detailHostThanksBtn">ありがとうを送る（ありがとう付与）</button>
             </div>
         </div>
@@ -2119,7 +2277,7 @@
     <div class="modal" id="joinModal" role="dialog" aria-modal="true" aria-labelledby="joinModalTitle">
         <div class="modal-sheet">
             <div class="modal-title" id="joinModalTitle">参加しますか？</div>
-            <div class="modal-text" id="joinModalText">募集者へ参加申請を送ります（お試し）。参加履歴に残り、募集者の承認後に通知でお知らせします。当日のあと、募集者から「ありがとう」が届くとあなたのありがとうが増えます。</div>
+            <div class="modal-text" id="joinModalText">募集者へ参加申請を送ります。参加履歴に残り、募集者の承認後に通知でお知らせします。はじめのありがとうは10です。当日のあと、募集者から「ありがとう」が届くとあなたのありがとうが増えます。</div>
             <div class="modal-actions">
                 <button type="button" class="btn" id="joinCancel">キャンセル</button>
                 <button type="button" class="btn btn-primary" id="joinConfirm">参加する</button>
@@ -2129,7 +2287,9 @@
     <div class="modal" id="thankOrganizerModal" role="dialog" aria-modal="true" aria-labelledby="thankOrganizerModalTitle">
         <div class="modal-sheet">
             <div class="modal-title" id="thankOrganizerModalTitle">募集者にお礼を送る</div>
-            <div class="modal-text">参加のお礼として、募集者宛のDMに送信されます（お試し）。文章は編集できます。</div>
+            <div class="modal-text">参加のお礼として、募集者宛のDMに送信されます。ありがとうはあなたの所持から募集者へ移ります。文章は編集できます。</div>
+            <label class="profile-edit-label" for="thankOrganizerAmount">ありがとうの数（1以上・所持以内）</label>
+            <input type="number" id="thankOrganizerAmount" class="profile-edit-input" min="1" value="1" inputmode="numeric" />
             <label class="sr-only" for="thankOrganizerText">お礼メッセージ</label>
             <textarea id="thankOrganizerText" class="modal-textarea" maxlength="500" placeholder="お礼のメッセージ" autocomplete="off"></textarea>
             <div class="modal-actions">
@@ -2138,20 +2298,62 @@
             </div>
         </div>
     </div>
+    <div class="modal" id="hostGrantThanksModal" role="dialog" aria-modal="true" aria-labelledby="hostGrantThanksModalTitle">
+        <div class="modal-sheet">
+            <div class="modal-title" id="hostGrantThanksModalTitle">ありがとうを送る</div>
+            <div class="modal-text">承認済みの参加者に、あなたのありがとうから1人あたりいくつ渡すか指定します。合計は所持数を超えられません。</div>
+            <label class="profile-edit-label" for="hostGrantThanksAmount">1人あたり</label>
+            <input type="number" id="hostGrantThanksAmount" class="profile-edit-input" min="1" value="1" inputmode="numeric" />
+            <div class="modal-text" id="hostGrantThanksModalSummary" style="margin-top:10px;"></div>
+            <div class="modal-actions">
+                <button type="button" class="btn" id="hostGrantThanksCancel">キャンセル</button>
+                <button type="button" class="btn btn-primary" id="hostGrantThanksConfirm">送信する</button>
+            </div>
+        </div>
+    </div>
+    <div class="modal" id="phoneAuthModal" role="dialog" aria-modal="true" aria-labelledby="phoneAuthModalTitle">
+        <div class="modal-sheet">
+            <div class="modal-title" id="phoneAuthModalTitle">電話番号でログイン</div>
+            <p class="modal-text" style="text-align:left;line-height:1.5;">同期サーバーにアカウントを紐づけます。同じ携帯電話番号なら、別の端末でも同じアカウントでログインできます。</p>
+            <label class="profile-edit-label" for="phoneAuthInput">携帯電話番号</label>
+            <input type="tel" id="phoneAuthInput" class="profile-edit-input" inputmode="tel" autocomplete="tel" placeholder="09012345678" />
+            <button type="button" class="btn btn-secondary" id="phoneAuthSendBtn" style="margin-top:10px;width:100%;">認証コードを送る</button>
+            <label class="profile-edit-label" for="phoneAuthCodeInput" style="margin-top:14px;">6桁のコード</label>
+            <input type="text" id="phoneAuthCodeInput" class="profile-edit-input" inputmode="numeric" maxlength="8" autocomplete="one-time-code" placeholder="123456" />
+            <label class="profile-edit-label" for="phoneAuthDisplayName" style="margin-top:14px;">表示名（初回登録時のみ必須・2回目以降は空でOK）</label>
+            <input type="text" id="phoneAuthDisplayName" class="profile-edit-input" maxlength="80" autocomplete="nickname" />
+            <div class="modal-actions" style="margin-top:16px;">
+                <button type="button" class="btn" id="phoneAuthCancelBtn">閉じる</button>
+                <button type="button" class="btn btn-primary" id="phoneAuthVerifyBtn">確定</button>
+            </div>
+        </div>
+    </div>
     <div class="toast" id="toast">保存しました</div>
     <div id="account" class="content-section">
         <div class="account-profile">
-            <div class="account-avatar" aria-hidden="true">⚡</div>
-            <div class="account-name">白石 太郎</div>
+            <div class="account-avatar-row">
+                <div class="account-avatar" id="accountAvatar" aria-hidden="true">🙂</div>
+                <button type="button" class="account-profile-edit-btn" id="accountProfileEditBtn" aria-label="プロフィールを編集" title="プロフィールを編集">
+                    <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                        <path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="account-name" id="accountDisplayName">ユーザーネーム</div>
             <div class="profile-balance-row" aria-label="ありがとう">
                 <div class="profile-balance-pill" aria-label="ありがとう">
                     <span class="profile-balance-heart" aria-hidden="true">♥</span>
-                    <span class="profile-balance-value thanks-gradient" id="accountThanksCount">10</span>
+                    <span class="profile-balance-value thanks-gradient" id="accountThanksCount">0</span>
                 </div>
             </div>
             <div class="account-block account-bio">
                 <h2 class="account-block-title">自己紹介</h2>
-                <p class="account-bio-text">都内在住。DTMと街歩きが好きです。週末はボランティアで地域の音楽イベントや清掃に参加しています。一緒に場を盛り上げられると嬉しいです。</p>
+                <p class="account-bio-text" id="accountBioText"></p>
+            </div>
+            <div class="account-block" id="accountPhoneAuthBlock" hidden>
+                <h2 class="account-block-title">同期ログイン</h2>
+                <p class="account-bio-text" id="accountPhoneAuthStatus">電話番号でログインすると、別端末でも同じアカウントを使えます。</p>
+                <button type="button" class="btn btn-secondary" id="accountPhoneLoginBtn" style="margin-top:8px;">電話番号でログイン</button>
             </div>
             <div class="account-block account-my-open" id="accountMyOpenBlock" hidden>
                 <h2 class="account-block-title">募集中</h2>
@@ -2163,19 +2365,40 @@
             </div>
         </div>
     </div>
+    <div id="accountProfileEdit" class="content-section">
+        <div class="account-profile account-profile-edit-screen">
+            <h2 class="account-block-title">プロフィールを編集</h2>
+            <p class="profile-edit-hint">表示名と自己紹介は、同期オン（<code style="font-size:0.85em;">?sync=auto</code>）のとき、サーバーにも保存され、他のユーザー側の表示名に反映されます。プロフィール画像はこのブラウザにだけ保存されます。</p>
+            <label class="profile-edit-label" for="profileEditName">表示名</label>
+            <input type="text" id="profileEditName" class="profile-edit-input" maxlength="80" autocomplete="nickname" />
+            <label class="profile-edit-label" for="profileEditPhoto">プロフィール画像</label>
+            <input type="file" id="profileEditPhoto" class="profile-edit-file" accept="image/*" />
+            <div class="profile-photo-preview-wrap" aria-live="polite">
+                <div class="profile-photo-preview-label">表示範囲プレビュー（実際の丸アイコン）</div>
+                <div class="profile-photo-preview-frame" id="profilePhotoPreviewFrame">
+                    <img id="profilePhotoPreviewImg" class="profile-photo-preview-img" alt="プロフィール画像プレビュー" />
+                    <div class="profile-photo-preview-empty">画像未選択</div>
+                </div>
+            </div>
+            <button type="button" class="btn profile-edit-clear-photo" id="profileEditPhotoClear">画像を削除</button>
+            <label class="profile-edit-label" for="profileEditBio">自己紹介</label>
+            <textarea id="profileEditBio" class="profile-edit-textarea" maxlength="500" rows="4" placeholder="よろしくお願いします（任意・500字まで）"></textarea>
+            <button type="button" class="btn btn-primary profile-edit-save" id="profileSaveBtn">保存する</button>
+        </div>
+    </div>
     <div id="organizer" class="content-section">
         <div class="account-profile">
-            <div class="account-avatar" id="organizerAvatar" aria-hidden="true">品</div>
-            <div class="account-name" id="organizerName">品川コミュニティ</div>
+            <div class="account-avatar" id="organizerAvatar" aria-hidden="true">？</div>
+            <div class="account-name" id="organizerName">主催者</div>
             <div class="profile-balance-row" aria-label="ありがとう">
                 <div class="profile-balance-pill" aria-label="ありがとう">
                     <span class="profile-balance-heart" aria-hidden="true">♥</span>
-                    <span class="profile-balance-value thanks-gradient" id="organizerThanksCount">24</span>
+                    <span class="profile-balance-value thanks-gradient" id="organizerThanksCount">0</span>
                 </div>
             </div>
             <div class="account-block account-bio">
                 <h2 class="account-block-title">自己紹介</h2>
-                <p class="account-bio-text" id="organizerBio">品川コミュニティの自己紹介（お試し）。丁寧に段取りを案内します。お気軽にDMください。</p>
+                <p class="account-bio-text" id="organizerBio"></p>
             </div>
             <div class="account-block">
                 <h2 class="account-block-title">募集中</h2>
@@ -2190,7 +2413,7 @@
             </div>
         </div>
     </div>
-    <button type="button" class="request-fab" id="requestFab" aria-label="依頼する" title="依頼する">
+    <button type="button" class="request-fab" id="requestFab" aria-label="募集する" title="募集する">
         <span class="fab-plus" aria-hidden="true"></span>
     </button>
     <nav class="bottom-nav">
@@ -2205,40 +2428,243 @@
 <script>
         var state = {
             viewStack: ['home'],
-            currentDetailId: 'vol-2',
+            currentDetailId: '',
             currentChatWith: '',
+            currentChatPeerUserId: '',
             currentOrganizerName: '',
+            currentOrganizerUserId: '',
             myHostedVolIds: {},
-            organizerThanksBonus: {},
             pendingThankOrganizer: '',
-            profile: { thanksCount: 10, name: '白石 太郎', avatar: '⚡' },
+            pendingThankOrganizerUserId: '',
+            pendingThankVolTitle: '',
+            hostGrantThanksPendingUniq: 0,
+            auth: { userId: '', secret: '', displayName: '', phoneE164: '' },
+            usersPublic: {},
+            profile: { thanksCount: 10, name: '', avatar: '🙂', bio: '', photoDataUrl: '' },
             filters: { near: true, thisWeek: true, remote: false, q: '' },
-            vols: {
-                'vol-1': { id: 'vol-1', thumb: '🎧', tag: '98% Match', title: '品川BP: 空間音響プロデュース', desc: '21歳男性の感性と共鳴する重低音を求む。空間音響の設計と現場の段取りに強い人歓迎。', place: '品川', venue: '東京都港区港南2丁目（品川駅）', startsAt: '2026-04-11T20:00:00', when: '今月', near: true, thisWeek: false, remote: false, chatWith: '品川コミュニティ', capacity: 3, joined: 1, durationText: '60分', dateBadge: '今日', dateTimeText: '4/11 20:00〜', tags: ['初心者歓迎'], details: { what: ['空間音響の設計・段取りのサポート'], who: ['音響やイベント運営に興味がある人'], prep: ['特になし（イヤホンがあると便利）'] } },
-                'vol-2': { id: 'vol-2', thumb: '🗺️', tag: 'New', title: '深夜の地図作成ボランティア', desc: '消えゆく街の構造を、今のうちに記録せよ。地図にメモを残しながら散歩できる人歓迎。作業は1時間から。', place: 'オンライン可', venue: 'オンライン', startsAt: '2026-04-11T22:30:00', when: '今週', near: false, thisWeek: true, remote: true, chatWith: '品川コミュニティ', capacity: 3, joined: 2, durationText: '90分', dateBadge: '今日', dateTimeText: '4/11 22:30〜', tags: ['経験者歓迎', '質問だけでもOK'], details: { what: ['地図を見ながら、街の情報をメモして共有'], who: ['観察が好き / コツコツ作業が得意な人'], prep: ['スマホまたはPC'] } },
-                'vol-3': { id: 'vol-3', thumb: '🎹', tag: '近くで募集中', title: '児童館ピアノ伴奏（土曜午後）', desc: '定番曲中心。楽譜はこちらで用意します。テンポ感が作れる人だと助かります。', place: '児童館', venue: '東京都品川区西大井2丁目（大崎児童館）', startsAt: '2026-04-12T14:00:00', when: '土曜', near: true, thisWeek: true, remote: false, chatWith: '児童館スタッフ', capacity: 2, joined: 1, durationText: '60分', dateBadge: '明日', dateTimeText: '4/12 14:00〜', tags: ['初心者歓迎'], details: { what: ['子ども向け曲の簡単な伴奏'], who: ['初見でも落ち着いて弾ける人'], prep: ['手元用の楽譜（あれば）'] } },
-                'vol-4': { id: 'vol-4', thumb: '🧤', tag: '週末', title: '河川敷クリーンアップ＆記録', desc: 'ゴミ拾いと定点写真。作業後に軽食あり。無理なく2〜4時間でOK。', place: '河川敷', venue: '東京都品川区荏原（目黒川河川敷）', startsAt: '2026-04-13T10:00:00', when: '今週末', near: true, thisWeek: true, remote: false, chatWith: '品川コミュニティ', capacity: 6, joined: 4, durationText: '120分', dateBadge: '', dateTimeText: '4/13 10:00〜', tags: ['体力ある方歓迎', 'キャンセル可能'], details: { what: ['ゴミ拾いと定点写真の記録'], who: ['屋外作業ができる人（無理なくでOK）'], prep: ['動きやすい服 / 軍手（あれば）'] } },
-                'vol-5': { id: 'vol-5', thumb: '💬', tag: 'オンライン可', title: '字幕付き動画の校正ボランティア', desc: '聞き取りに自信がある方歓迎。1本30分目安。誤字チェック中心です。', place: 'オンライン', venue: 'オンライン', startsAt: '', when: 'いつでも', near: false, thisWeek: false, remote: true, chatWith: '字幕チーム', capacity: 4, joined: 3, durationText: '45分', dateBadge: '', dateTimeText: 'いつでも（相談）', tags: ['ライティングOK', '質問だけでもOK'], details: { what: ['字幕の誤字脱字チェック'], who: ['文章チェックが得意な人'], prep: ['PC推奨（スマホでも可）'] } },
-                'vol-6': { id: 'vol-6', thumb: '🎨', tag: 'スキル募集', title: '地域FM番組のロゴリフレッシュ', desc: 'シンプルで温かいトーン希望。納品はデータのみ。ラフ提案からOK。', place: 'オンライン', venue: 'オンライン', startsAt: '', when: '今月', near: false, thisWeek: false, remote: true, chatWith: '地域FM', capacity: 3, joined: 2, durationText: '2日', dateBadge: '', dateTimeText: '今月中（相談）', tags: ['デザインできる方', 'キャンセル可能'], details: { what: ['番組ロゴのリフレッシュ提案'], who: ['ロゴ/タイポが好きな人'], prep: ['制作環境（任意）'] } }
-            },
-            threads: [
-                { with: '品川コミュニティ', avatar: '品', unread: true, lastAt: '2分前', messages: [
-                    { me: false, text: '参加ありがとうございます！集合場所の詳細をお送りします。' },
-                    { me: true, text: '了解です。集合場所と持ち物はありますか？' },
-                    { me: false, text: '軍手があると助かります。集合は駅改札前です。' }
-                ]},
-                { with: '児童館スタッフ', avatar: '児', unread: false, lastAt: '昨日', messages: [
-                    { me: false, text: '土曜の曲目、3曲ほど候補があります。' },
-                    { me: true, text: '助かります。難易度はどれくらいですか？' }
-                ]}
-            ],
-            history: [
-                { title: '河川敷クリーンアップ＆記録', meta: '2026年3月 · 品川周辺 · 4時間' },
-                { title: '児童館ピアノ伴奏（土曜午後）', meta: '2026年2月 · 月2回 · 計6時間' },
-                { title: '字幕付き動画の校正ボランティア', meta: '2026年1月 · オンライン · 3本' }
-            ],
+            vols: {},
+            threads: [],
+            history: [],
             notifications: []
         };
+
+        /** true にするとアカウントに「同期ログイン」（電話番号）を出す。準備中は false のまま */
+        var PHONE_LOGIN_ACCOUNT_UI_ENABLED = false;
+
+        function persistTealAuthToStorage() {
+            var key = 'tealfolder.auth.v1';
+            try {
+                localStorage.setItem(key, JSON.stringify({
+                    userId: state.auth.userId,
+                    secret: state.auth.secret,
+                    displayName: state.auth.displayName || '',
+                    phoneE164: state.auth.phoneE164 || ''
+                }));
+            } catch (_) {}
+        }
+
+        function loadPersistedProfile() {
+            try {
+                var raw = localStorage.getItem('tealfolder.profile.v1');
+                if (!raw) return;
+                var o = JSON.parse(raw);
+                if (!o || typeof o !== 'object') return;
+                if (typeof o.name === 'string' && o.name.trim()) state.profile.name = o.name.trim().slice(0, 80);
+                if (typeof o.avatar === 'string' && o.avatar.trim()) state.profile.avatar = o.avatar.trim().slice(0, 8);
+                if (typeof o.bio === 'string') state.profile.bio = o.bio.slice(0, 500);
+                if (typeof o.photoDataUrl === 'string' && o.photoDataUrl.indexOf('data:image/') === 0) {
+                    state.profile.photoDataUrl = o.photoDataUrl;
+                }
+                if (typeof o.thanksCount === 'number' && isFinite(o.thanksCount) && o.thanksCount >= 0) {
+                    state.profile.thanksCount = Math.floor(o.thanksCount);
+                } else if (Object.prototype.hasOwnProperty.call(o, 'thanksCount')) {
+                    /* ignore malformed */
+                } else {
+                    state.profile.thanksCount = 10;
+                }
+            } catch (_) {}
+        }
+
+        function savePersistedProfile() {
+            try {
+                localStorage.setItem('tealfolder.profile.v1', JSON.stringify({
+                    name: state.profile.name,
+                    avatar: state.profile.avatar,
+                    bio: state.profile.bio || '',
+                    photoDataUrl: state.profile.photoDataUrl || '',
+                    thanksCount: typeof state.profile.thanksCount === 'number' && isFinite(state.profile.thanksCount)
+                        ? Math.max(0, Math.floor(state.profile.thanksCount))
+                        : 10
+                }));
+            } catch (_) {}
+        }
+
+        function persistProfileThanksCount() {
+            savePersistedProfile();
+            renderAccount();
+            if (liveSyncEnabled() && getMyUserId()) {
+                liveSyncPatchProfile({ thanksCount: state.profile.thanksCount }, function () {});
+            }
+        }
+
+        function syncAuthStorageDisplayNameFromProfile() {
+            if (!getMyUserId()) return;
+            state.auth.displayName = state.profile.name;
+            persistTealAuthToStorage();
+        }
+
+        function hasSavedProfileInStorage() {
+            try {
+                return !!localStorage.getItem('tealfolder.profile.v1');
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function applyProfileToAccountDom() {
+            var nameEl = document.getElementById('accountDisplayName');
+            var av = document.getElementById('accountAvatar');
+            var bioEl = document.getElementById('accountBioText');
+            if (nameEl) nameEl.textContent = state.profile.name || 'ユーザーネーム';
+            if (bioEl) bioEl.textContent = state.profile.bio || '';
+            if (av) {
+                if (state.profile.photoDataUrl) {
+                    av.textContent = '';
+                    av.style.backgroundImage = 'url(' + JSON.stringify(state.profile.photoDataUrl) + ')';
+                    av.classList.add('account-avatar--photo');
+                } else {
+                    av.classList.remove('account-avatar--photo');
+                    av.style.backgroundImage = '';
+                    av.textContent = state.profile.avatar || '🙂';
+                }
+            }
+        }
+
+        function populateProfileEditForm() {
+            var n = document.getElementById('profileEditName');
+            var b = document.getElementById('profileEditBio');
+            if (n) n.value = state.profile.name || '';
+            if (b) b.value = state.profile.bio || '';
+            renderProfilePhotoPreview();
+        }
+
+        function renderProfilePhotoPreview() {
+            var frame = document.getElementById('profilePhotoPreviewFrame');
+            var img = document.getElementById('profilePhotoPreviewImg');
+            var clrBtn = document.getElementById('profileEditPhotoClear');
+            if (!frame || !img) return;
+            var src = String(state.profile.photoDataUrl || '');
+            if (src && src.indexOf('data:image/') === 0) {
+                img.src = src;
+                frame.classList.add('has-image');
+                if (clrBtn) {
+                    clrBtn.hidden = false;
+                    clrBtn.style.display = 'inline-flex';
+                }
+            } else {
+                img.removeAttribute('src');
+                frame.classList.remove('has-image');
+                if (clrBtn) {
+                    clrBtn.hidden = true;
+                    clrBtn.style.display = 'none';
+                }
+            }
+        }
+
+        function fileToResizedJpegDataURL(file, maxSide, quality, cb) {
+            if (!file || !file.type || file.type.indexOf('image/') !== 0) {
+                if (cb) cb(new Error('type'));
+                return;
+            }
+            var fr = new FileReader();
+            fr.onload = function () {
+                var img = new Image();
+                img.onload = function () {
+                    var w = img.width;
+                    var h = img.height;
+                    var scale = Math.min(1, maxSide / Math.max(w, h));
+                    var cw = Math.max(1, Math.round(w * scale));
+                    var ch = Math.max(1, Math.round(h * scale));
+                    var c = document.createElement('canvas');
+                    c.width = cw;
+                    c.height = ch;
+                    var ctx = c.getContext('2d');
+                    ctx.drawImage(img, 0, 0, cw, ch);
+                    try {
+                        cb(null, c.toDataURL('image/jpeg', quality));
+                    } catch (e) {
+                        cb(e);
+                    }
+                };
+                img.onerror = function () { cb(new Error('img')); };
+                img.src = fr.result;
+            };
+            fr.onerror = function () { cb(new Error('read')); };
+            fr.readAsDataURL(file);
+        }
+
+        function liveSyncPatchProfile(patch, done) {
+            if (typeof done !== 'function') done = function () {};
+            var base = getLiveSyncBase();
+            if (!base || !getMyUserId()) {
+                done(true);
+                return;
+            }
+            fetch(base + '/api/auth/me', {
+                method: 'PATCH',
+                headers: liveSyncHeaders(),
+                body: JSON.stringify(patch || {})
+            })
+                .then(function (r) { return r.ok ? r.json() : null; })
+                .then(function (j) {
+                    var ok = !!(j && (j.ok === true || j.displayName));
+                    if (ok) {
+                        if (j.displayName) {
+                            state.auth.displayName = j.displayName;
+                            persistTealAuthToStorage();
+                        }
+                    }
+                    done(ok);
+                })
+                .catch(function () { done(false); });
+        }
+
+        function saveProfileFromForm() {
+            var n = document.getElementById('profileEditName');
+            var b = document.getElementById('profileEditBio');
+            var name = n && String(n.value || '').trim();
+            if (!name) {
+                showToast('表示名を入力してください');
+                return;
+            }
+            state.profile.name = name.slice(0, 80);
+            state.profile.bio = b ? String(b.value || '').trim().slice(0, 500) : '';
+            applyProfileToAccountDom();
+            savePersistedProfile();
+            syncAuthStorageDisplayNameFromProfile();
+            populateProfileEditForm();
+            renderAccount();
+            renderSearchResults();
+            var fin = function (remoteOk) {
+                if (liveSyncEnabled() && getMyUserId() && remoteOk === false) {
+                    showToast('サーバーへの保存に失敗しました（この端末には保存済みです）');
+                } else {
+                    showToast('プロフィールを保存しました');
+                }
+                if (state.viewStack.length && state.viewStack[state.viewStack.length - 1] === 'accountProfileEdit') {
+                    goBack();
+                }
+            };
+            if (liveSyncEnabled() && getMyUserId()) {
+                liveSyncPatchProfile({
+                    displayName: state.profile.name,
+                    bio: state.profile.bio,
+                    thanksCount: state.profile.thanksCount
+                }, fin);
+            } else {
+                fin(true);
+            }
+        }
 
         function formatVolDateTimeFromIso(isoText) {
             if (!isoText) return '';
@@ -2287,7 +2713,7 @@
         }
 
         function syncAccountNameFromDom() {
-            var nameEl = document.querySelector('#account .account-name');
+            var nameEl = document.getElementById('accountDisplayName') || document.querySelector('#account .account-name');
             var t = nameEl && nameEl.textContent;
             if (t) state.profile.name = String(t).trim();
             return normalizeDisplayName(state.profile.name || '');
@@ -2297,21 +2723,92 @@
             return normalizeDisplayName(a) === normalizeDisplayName(b);
         }
 
-        /** この端末で作成・保存した自分の依頼のみ（デモの vol-1 等は常に false） */
+        function newDmSyncId() {
+            return 'dm-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+        }
+
+        function dmCanonicalKey(peerName) {
+            var me = normalizeDisplayName(syncAccountNameFromDom());
+            var peer = normalizeDisplayName(peerName);
+            if (!me || !peer) return '';
+            return me < peer ? (me + '\n' + peer) : (peer + '\n' + me);
+        }
+
+        function dmUserThreadKey(peerUserId) {
+            var me = getMyUserId();
+            if (!me || !peerUserId) return '';
+            return me < peerUserId ? (me + '|' + peerUserId) : (peerUserId + '|' + me);
+        }
+
+        function displayNameForUserId(uid) {
+            if (!uid) return '';
+            var u = state.usersPublic[uid];
+            if (u && u.displayName) return String(u.displayName).trim();
+            var tail = String(uid).replace(/^usr-/, '').slice(0, 8);
+            return tail ? ('ユーザー·' + tail) : 'ユーザー';
+        }
+
+        function threadMatchesOpenChat(th) {
+            if (!th) return false;
+            var ouid = state.currentChatPeerUserId || '';
+            if (ouid && th.peerUserId && ouid === th.peerUserId) return true;
+            return accountsMatch(state.currentChatWith || '', th.with);
+        }
+
+        function findChatThread() {
+            var ouid = state.currentChatPeerUserId || '';
+            if (ouid) {
+                var byUid = state.threads.find(function (x) { return x.peerUserId === ouid; });
+                if (byUid) return byUid;
+            }
+            return state.threads.find(function (x) { return x.with === state.currentChatWith; });
+        }
+
+        function insertDmSorted(th, msg) {
+            var ta = typeof msg.at === 'number' ? msg.at : 0;
+            var tid = msg.id ? String(msg.id) : '';
+            var i = 0;
+            while (i < th.messages.length) {
+                var m = th.messages[i];
+                var ua = typeof m.at === 'number' ? m.at : 0;
+                if (ua > ta) break;
+                if (ua === ta && tid && m.id && String(m.id).localeCompare(tid) > 0) break;
+                i++;
+            }
+            th.messages.splice(i, 0, msg);
+        }
+
+
+        /** この端末で作成・保存した自分の募集のみ */
         function isOwnVol(v) {
             if (!v || typeof v.id !== 'string' || v.id.indexOf('vol-user-') !== 0) return false;
+            var uid = getMyUserId();
+            if (uid && v.hostedByUserId) return v.hostedByUserId === uid;
             var key = getDeviceOwnerKey();
             if (v.hostedByLocal && v.hostedByLocal !== key) return false;
             if (v.hostedByLocal === key) return true;
             return !!(state.myHostedVolIds && state.myHostedVolIds[v.id]);
         }
 
+        /** localStorage に残す募集か（同期バンドル由来の他人分を保存しない／起動時の混入を落とす） */
+        function shouldKeepVolInLocalCache(v) {
+            if (!v || typeof v.id !== 'string' || v.id.indexOf('vol-user-') !== 0) return false;
+            var uid = getMyUserId();
+            if (v.hostedByUserId) {
+                if (!uid) return false;
+                return v.hostedByUserId === uid;
+            }
+            var key = getDeviceOwnerKey();
+            if (v.hostedByLocal && v.hostedByLocal !== key) return false;
+            if (v.hostedByLocal === key) return true;
+            return false;
+        }
+
         function getApprovedJoinNotificationsForVol(volId) {
-            var me = syncAccountNameFromDom();
             return (state.notifications || []).filter(function (n) {
                 return n && n.type === 'join_request' && n.volId === volId
                     && (n.joinStatus != null ? n.joinStatus : 'pending') === 'approved'
-                    && accountsMatch(n.organizerName, me);
+                    && notifIsOrganizer(n);
             });
         }
 
@@ -2343,22 +2840,127 @@
             if (!state.consumedThanksNotifIds) state.consumedThanksNotifIds = {};
             var bumped = false;
             (state.notifications || []).forEach(function (n) {
-                if (!n || n.type !== 'thanks_granted' || !accountsMatch(n.applicantName, me)) return;
+                if (!n || n.type !== 'thanks_granted') return;
+                if (n.applicantUserId && getMyUserId()) {
+                    if (n.applicantUserId !== getMyUserId()) return;
+                } else if (!accountsMatch(n.applicantName, me)) return;
                 if (state.consumedThanksNotifIds[n.id]) return;
                 state.consumedThanksNotifIds[n.id] = true;
-                state.profile.thanksCount = (state.profile.thanksCount || 0) + 1;
+                var add = 1;
+                if (n.thanksAmount != null) {
+                    var ta = Number(n.thanksAmount);
+                    add = isFinite(ta) && ta >= 1 ? Math.floor(ta) : 1;
+                }
+                state.profile.thanksCount = (state.profile.thanksCount || 0) + add;
                 bumped = true;
             });
-            if (bumped) renderAccount();
+            if (bumped) persistProfileThanksCount();
         }
 
-        function grantThanksForCurrentVolFromHost() {
+        function consumeThanksTipForOrganizer() {
+            var me = getMyUserId();
+            if (!me) return;
+            if (!state.consumedThanksTipNotifIds) state.consumedThanksTipNotifIds = {};
+            var bumped = false;
+            (state.notifications || []).forEach(function (n) {
+                if (!n || n.type !== 'thanks_tip') return;
+                if (n.organizerUserId !== me) return;
+                if (state.consumedThanksTipNotifIds[n.id]) return;
+                state.consumedThanksTipNotifIds[n.id] = true;
+                var add = 1;
+                if (n.thanksAmount != null) {
+                    var ta = Number(n.thanksAmount);
+                    add = isFinite(ta) && ta >= 1 ? Math.floor(ta) : 1;
+                }
+                state.profile.thanksCount = (state.profile.thanksCount || 0) + add;
+                bumped = true;
+            });
+            if (bumped) persistProfileThanksCount();
+        }
+
+        function closeHostGrantThanksModal() {
+            var m = document.getElementById('hostGrantThanksModal');
+            if (m) m.classList.remove('open');
+            state.hostGrantThanksPendingUniq = 0;
+        }
+
+        function updateHostGrantThanksModalSummary() {
+            var sumEl = document.getElementById('hostGrantThanksModalSummary');
+            var inp = document.getElementById('hostGrantThanksAmount');
+            if (!sumEl) return;
+            var uniq = state.hostGrantThanksPendingUniq || 0;
+            var bal = Math.max(0, Math.floor(state.profile.thanksCount || 0));
+            var per = parseInt(inp && inp.value, 10);
+            if (!isFinite(per) || per < 1) per = 1;
+            var total = per * uniq;
+            sumEl.textContent = '参加者' + uniq + '名 × ' + per + ' ＝ 合計' + total + ' / 所持 ' + bal;
+        }
+
+        function openHostGrantThanksModal() {
             var vid = state.currentDetailId;
             var v = vid && state.vols[vid];
             if (!v || !isOwnVol(v)) return;
-            var me = syncAccountNameFromDom();
             var pendingList = getApprovedJoinNotificationsForVol(vid).filter(function (n) { return !n.thanksGranted; });
             if (!pendingList.length) return;
+            var uniqueNames = {};
+            pendingList.forEach(function (n) {
+                var app = normalizeDisplayName(n.applicantName || '参加者') || '参加者';
+                uniqueNames[app] = true;
+            });
+            var uniq = Object.keys(uniqueNames).length;
+            if (!uniq) return;
+            var bal = Math.max(0, Math.floor(state.profile.thanksCount || 0));
+            var maxPer = Math.floor(bal / uniq);
+            if (maxPer < 1) {
+                showToast('ありがとうが足りません（' + uniq + '名に渡すには合計' + uniq + '以上必要です）');
+                return;
+            }
+            var inp = document.getElementById('hostGrantThanksAmount');
+            if (inp) {
+                inp.min = '1';
+                inp.max = String(maxPer);
+                inp.value = String(Math.min(1, maxPer));
+            }
+            state.hostGrantThanksPendingUniq = uniq;
+            updateHostGrantThanksModalSummary();
+            var m = document.getElementById('hostGrantThanksModal');
+            if (m) m.classList.add('open');
+        }
+
+        function confirmHostGrantThanksFromModal() {
+            var vid = state.currentDetailId;
+            var v = vid && state.vols[vid];
+            if (!v || !isOwnVol(v)) {
+                closeHostGrantThanksModal();
+                return;
+            }
+            var inp = document.getElementById('hostGrantThanksAmount');
+            var per = parseInt(inp && inp.value, 10);
+            if (!isFinite(per) || per < 1) {
+                showToast('1以上の数を指定してください');
+                return;
+            }
+            var pendingList = getApprovedJoinNotificationsForVol(vid).filter(function (n) { return !n.thanksGranted; });
+            if (!pendingList.length) {
+                closeHostGrantThanksModal();
+                return;
+            }
+            var uniqueNames = {};
+            pendingList.forEach(function (n) {
+                var app = normalizeDisplayName(n.applicantName || '参加者') || '参加者';
+                uniqueNames[app] = true;
+            });
+            var uniq = Object.keys(uniqueNames).length;
+            var total = per * uniq;
+            var bal = Math.max(0, Math.floor(state.profile.thanksCount || 0));
+            if (bal < total) {
+                showToast('ありがとうが足りません（必要 ' + total + ' / 所持 ' + bal + '）');
+                return;
+            }
+            state.profile.thanksCount = bal - total;
+            persistProfileThanksCount();
+
+            var me = syncAccountNameFromDom();
             var applicantsDone = {};
             var dmDone = {};
             var tick = Date.now();
@@ -2374,24 +2976,26 @@
                         at: '今',
                         organizerName: me,
                         applicantName: app,
+                        organizerUserId: getMyUserId() || undefined,
+                        applicantUserId: n.applicantUserId || undefined,
                         volTitle: n.volTitle || v.title || '',
-                        volId: vid
+                        volId: vid,
+                        thanksAmount: per
                     };
                     liveSyncPostNotification(tgN);
                     state.notifications.unshift(tgN);
                 }
                 if (!dmDone[app]) {
                     dmDone[app] = true;
-                    var th = ensureThread(app);
-                    th.messages.push({ me: true, text: '当日はありがとうございました。とても助かりました（お試し）。' });
-                    th.lastAt = '今';
+                    appendOutgoingDm(app, '当日はありがとうございました。とても助かりました。', n.applicantUserId || '');
                 }
             });
+            closeHostGrantThanksModal();
             setUnreadFlag();
             renderDmThreads();
             renderNotifications();
             updateDetailVolunteerDayUI();
-            showToast('ありがとうを送り、参加者に付与しました（お試し）。');
+            showToast('ありがとうを送り、参加者に付与しました。');
         }
 
         function syncDetailActionBars() {
@@ -2400,6 +3004,7 @@
             var own = !!(v && isOwnVol(v));
             var part = document.getElementById('detailParticipantActions');
             var ownBar = document.getElementById('detailOwnerActions');
+            var joinBtn = document.getElementById('joinBtn');
             if (part) {
                 part.hidden = own;
                 part.style.display = own ? 'none' : 'flex';
@@ -2408,41 +3013,179 @@
                 ownBar.hidden = !own;
                 ownBar.style.display = own ? 'flex' : 'none';
             }
+            if (joinBtn) {
+                if (!own && v) {
+                    var statusLabel = getJoinButtonStatusLabel(vid);
+                    if (statusLabel) {
+                        joinBtn.textContent = statusLabel;
+                        joinBtn.disabled = true;
+                        joinBtn.classList.remove('btn-primary');
+                        joinBtn.classList.add('btn-secondary', 'join-btn--status');
+                        if (statusLabel === '承認済み') {
+                            joinBtn.classList.add('join-btn--approved');
+                        } else {
+                            joinBtn.classList.remove('join-btn--approved');
+                        }
+                    } else {
+                        joinBtn.textContent = '参加する';
+                        joinBtn.disabled = false;
+                        joinBtn.classList.add('btn-primary');
+                        joinBtn.classList.remove('btn-secondary', 'join-btn--status', 'join-btn--approved');
+                    }
+                } else {
+                    joinBtn.textContent = '参加する';
+                    joinBtn.disabled = false;
+                    joinBtn.classList.add('btn-primary');
+                    joinBtn.classList.remove('btn-secondary', 'join-btn--status', 'join-btn--approved');
+                }
+            }
             updateDetailVolunteerDayUI();
         }
 
         var liveSyncConnectedOnce = false;
 
         function getLiveSyncBase() {
+            function stashSyncBase(b) {
+                try {
+                    localStorage.setItem('tealfolder.syncBase', b);
+                } catch (_) {}
+                return b;
+            }
+            function asHttpSyncBase(raw) {
+                var s = String(raw || '').trim();
+                if (!s || s === 'null') return '';
+                if (!/^https?:\/\//i.test(s)) return '';
+                try {
+                    /* /index.html などが付くと .../index.html/api/... になり 404 になるので origin のみ使う */
+                    return new URL(s).origin;
+                } catch (_) {
+                    return '';
+                }
+            }
             try {
                 var q = new URLSearchParams(window.location.search).get('sync');
                 if (q === 'auto' || q === '1') {
-                    var o = String(window.location.origin || '').replace(/\/$/, '');
-                    if (o) {
-                        try { localStorage.setItem('tealfolder.syncBase', o); } catch (_) {}
-                        return o;
-                    }
+                    var o = asHttpSyncBase(window.location.origin);
+                    if (o) return stashSyncBase(o);
                 }
                 if (q) {
-                    var b = decodeURIComponent(String(q)).replace(/\/$/, '');
-                    if (b) {
-                        try { localStorage.setItem('tealfolder.syncBase', b); } catch (_) {}
-                        return b;
-                    }
+                    var b = asHttpSyncBase(decodeURIComponent(String(q)));
+                    if (b) return stashSyncBase(b);
                 }
             } catch (_) {}
             try {
-                var s = localStorage.getItem('tealfolder.syncBase');
-                if (s) return String(s).replace(/\/$/, '');
+                return asHttpSyncBase(localStorage.getItem('tealfolder.syncBase'));
             } catch (_) {}
             return '';
         }
 
+        function syncJsonFromFetchResponse(r) {
+            return r.text().then(function (t) {
+                var j = null;
+                if (t) {
+                    try {
+                        j = JSON.parse(t);
+                    } catch (_) {}
+                }
+                return { ok: r.ok, status: r.status, j: j };
+            });
+        }
+
+        function getMyUserId() {
+            return (state.auth && state.auth.userId) ? String(state.auth.userId) : '';
+        }
+
         function liveSyncHeaders() {
-            return {
+            var h = {
                 'Content-Type': 'application/json',
                 'X-Tealdevice': getDeviceOwnerKey()
             };
+            if (state.auth && state.auth.userId && state.auth.secret) {
+                h['X-Teal-User-Id'] = state.auth.userId;
+                h['X-Teal-Secret'] = state.auth.secret;
+            }
+            return h;
+        }
+
+        function ensureAuthSession(done) {
+            if (typeof done !== 'function') done = function () {};
+            if (!liveSyncEnabled()) {
+                done();
+                return;
+            }
+            var key = 'tealfolder.auth.v1';
+            try {
+                var raw = localStorage.getItem(key);
+                if (raw) {
+                    var o = JSON.parse(raw);
+                    if (o && typeof o.userId === 'string' && typeof o.secret === 'string') {
+                        state.auth.userId = o.userId;
+                        state.auth.secret = o.secret;
+                        state.auth.displayName = o.displayName || '';
+                        state.auth.phoneE164 = o.phoneE164 || '';
+                        if (state.auth.displayName && !hasSavedProfileInStorage()) {
+                            state.profile.name = state.auth.displayName;
+                            applyProfileToAccountDom();
+                        }
+                        done();
+                        return;
+                    }
+                }
+            } catch (_) {}
+            var dn = syncAccountNameFromDom();
+            if (!dn) {
+                done();
+                return;
+            }
+            var base = getLiveSyncBase();
+            fetch(base + '/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ displayName: dn })
+            })
+                .then(function (r) { return r.json(); })
+                .then(function (j) {
+                    if (j && j.userId && j.secret) {
+                        state.auth.userId = j.userId;
+                        state.auth.secret = j.secret;
+                        state.auth.displayName = j.displayName || dn;
+                        state.auth.phoneE164 = '';
+                        if (state.auth.displayName && !hasSavedProfileInStorage()) {
+                            state.profile.name = state.auth.displayName;
+                            applyProfileToAccountDom();
+                        }
+                        persistTealAuthToStorage();
+                    }
+                    done();
+                })
+                .catch(function () { done(); });
+        }
+
+        function notifIsOrganizer(n) {
+            if (!n) return false;
+            var uid = getMyUserId();
+            if (n.organizerUserId && uid) return n.organizerUserId === uid;
+            return accountsMatch(n.organizerName, syncAccountNameFromDom());
+        }
+
+        function notifIsApplicant(n) {
+            if (!n) return false;
+            var uid = getMyUserId();
+            if (n.applicantUserId && uid) return n.applicantUserId === uid;
+            return accountsMatch(n.applicantName, syncAccountNameFromDom());
+        }
+
+        /** 参加ボタンの表示（空なら「参加する」・押下可） */
+        function getJoinButtonStatusLabel(volId) {
+            if (!volId) return '';
+            var n = (state.notifications || []).find(function (x) {
+                return x && x.type === 'join_request' && x.volId === volId && notifIsApplicant(x);
+            });
+            if (!n) return '';
+            var st = n.joinStatus != null ? n.joinStatus : 'pending';
+            if (st === 'rejected') return '';
+            if (st === 'approved') return '承認済み';
+            return '申請済み';
         }
 
         function liveSyncEnabled() {
@@ -2451,11 +3194,22 @@
 
         function liveSyncRebuildMyHostedIds() {
             state.myHostedVolIds = {};
+            var uid = getMyUserId();
+            var dev = getDeviceOwnerKey();
             Object.keys(state.vols || {}).forEach(function (k) {
                 if (k.indexOf('vol-user-') !== 0) return;
                 var v = state.vols[k];
-                if (v && v.hostedByLocal === getDeviceOwnerKey()) state.myHostedVolIds[k] = true;
+                if (v && uid && v.hostedByUserId === uid) state.myHostedVolIds[k] = true;
+                else if (v && v.hostedByLocal === dev) state.myHostedVolIds[k] = true;
             });
+        }
+
+
+        function updateHomeEmptyState() {
+            var homeCards = document.getElementById('homeCards');
+            var hint = document.getElementById('homeEmptyHint');
+            if (!homeCards || !hint) return;
+            hint.hidden = !!homeCards.querySelector('[data-open-detail]');
         }
 
         function liveSyncReconcileHomeCards() {
@@ -2479,10 +3233,14 @@
                     if (el && el.parentNode) el.parentNode.removeChild(el);
                 }
             });
+            updateHomeEmptyState();
         }
 
         function liveSyncApplyBundle(data) {
             if (!data) return;
+            if (data.usersPublic && typeof data.usersPublic === 'object') {
+                state.usersPublic = Object.assign({}, data.usersPublic);
+            }
             var sv = data.vols || {};
             Object.keys(sv).forEach(function (k) {
                 if (k.indexOf('vol-user-') === 0 && sv[k]) state.vols[k] = sv[k];
@@ -2494,6 +3252,7 @@
             state.notifications = (data.notifications || []).map(function (x) {
                 return Object.assign({}, x);
             });
+            var dmTouched = liveSyncMergeDmThreads(data.dmThreads || {});
             liveSyncRebuildMyHostedIds();
             if (typeof window.__tfSyncSaveUserVolsFromState === 'function') {
                 window.__tfSyncSaveUserVolsFromState();
@@ -2504,6 +3263,12 @@
             syncDetailActionBars();
             renderAccount();
             liveSyncReconcileHomeCards();
+            if (dmTouched) {
+                renderDmThreads();
+                var chatEl = document.getElementById('chat');
+                if (chatEl && chatEl.classList.contains('active')) renderChat();
+                setUnreadFlag();
+            }
         }
 
         function liveSyncPostVol(v) {
@@ -2544,6 +3309,153 @@
             }).catch(function () {});
         }
 
+        function liveSyncPostDmAppend(threadKey, message) {
+            var base = getLiveSyncBase();
+            if (!base || !threadKey || !message) return;
+            fetch(base + '/api/dm/append', {
+                method: 'POST',
+                headers: liveSyncHeaders(),
+                body: JSON.stringify({ threadKey: threadKey, message: message })
+            }).catch(function () {});
+        }
+
+        function appendOutgoingDm(peerName, text, peerUserId) {
+            peerUserId = peerUserId || '';
+            var th = ensureThread(peerName, peerUserId);
+            var id = newDmSyncId();
+            var dev = getDeviceOwnerKey();
+            var nm = syncAccountNameFromDom();
+            var at = Date.now();
+            var myUid = getMyUserId() || '';
+            insertDmSorted(th, { id: id, me: true, text: text, device: dev, name: nm, fromUserId: myUid, at: at });
+            th.lastAt = '今';
+            th.unread = false;
+            if (liveSyncEnabled()) {
+                var tk = '';
+                if (peerUserId && myUid) tk = dmUserThreadKey(peerUserId);
+                if (!tk) tk = dmCanonicalKey(peerName);
+                if (tk) {
+                    liveSyncPostDmAppend(tk, { id: id, device: dev, name: nm, text: text, at: at, fromUserId: myUid });
+                }
+            }
+        }
+
+        function liveSyncMergeDmThreads(dmThreads) {
+            if (!dmThreads || typeof dmThreads !== 'object') return false;
+            var meName = normalizeDisplayName(syncAccountNameFromDom());
+            var myDev = getDeviceOwnerKey();
+            var myUid = getMyUserId() || '';
+            var touched = false;
+            Object.keys(dmThreads).forEach(function (threadKey) {
+                var tk = String(threadKey);
+                var peer = '';
+                var peerUserId = '';
+                if (tk.indexOf('|') !== -1) {
+                    var uparts = tk.split('|');
+                    if (uparts.length !== 2) return;
+                    var u0 = String(uparts[0] || '').trim();
+                    var u1 = String(uparts[1] || '').trim();
+                    if (!myUid || (u0 !== myUid && u1 !== myUid)) return;
+                    peerUserId = u0 === myUid ? u1 : u0;
+                    peer = displayNameForUserId(peerUserId);
+                } else {
+                    var parts = tk.split('\n');
+                    if (parts.length !== 2 || !meName) return;
+                    var p0 = normalizeDisplayName(parts[0]);
+                    var p1 = normalizeDisplayName(parts[1]);
+                    if (p0 === meName) peer = parts[1];
+                    else if (p1 === meName) peer = parts[0];
+                    else return;
+                }
+                var bucket = dmThreads[threadKey];
+                var incoming = bucket && bucket.messages;
+                if (!Array.isArray(incoming) || !incoming.length) return;
+                var th = ensureThread(peer, peerUserId);
+                var have = {};
+                th.messages.forEach(function (m) {
+                    if (m && m.id) have[m.id] = true;
+                });
+                incoming.forEach(function (row) {
+                    if (!row || typeof row.id !== 'string' || have[row.id]) return;
+                    have[row.id] = true;
+                    var fromDev = String(row.device || '');
+                    var fromUid = String(row.fromUserId || '');
+                    var isMe = (fromUid && myUid) ? (fromUid === myUid) : (fromDev === myDev);
+                    var msg = {
+                        id: row.id,
+                        me: isMe,
+                        text: String(row.text || ''),
+                        device: fromDev,
+                        name: String(row.name || ''),
+                        fromUserId: fromUid,
+                        at: typeof row.at === 'number' ? row.at : Date.now()
+                    };
+                    insertDmSorted(th, msg);
+                    if (!isMe && !threadMatchesOpenChat(th)) {
+                        th.unread = true;
+                    }
+                    touched = true;
+                });
+                if (th.messages.length) th.lastAt = '今';
+            });
+            return touched;
+        }
+
+        function syncThreadKeyForThread(t) {
+            if (!t) return '';
+            if (t.peerUserId && getMyUserId()) {
+                var uidKey = dmUserThreadKey(t.peerUserId);
+                if (uidKey) return uidKey;
+            }
+            return dmCanonicalKey(t.with);
+        }
+
+        function liveSyncClearDmRemote(threadKey, all) {
+            if (!liveSyncEnabled()) return;
+            var base = getLiveSyncBase();
+            var body = all ? '{}' : JSON.stringify({ threadKey: String(threadKey || '') });
+            if (!all && !String(threadKey || '').trim()) return;
+            fetch(base + '/api/dev/clear-dm-threads', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: body
+            }).catch(function () {});
+        }
+
+        function removeDmThreadAndSync(th) {
+            if (!th) return;
+            if (!window.confirm('このスレッドを削除しますか？')) return;
+            var wasOpen = threadMatchesOpenChat(th);
+            var tk = syncThreadKeyForThread(th);
+            state.threads = (state.threads || []).filter(function (x) { return x !== th; });
+            setUnreadFlag();
+            renderDmThreads();
+            if (wasOpen) {
+                goBack();
+                renderChat();
+            }
+            liveSyncClearDmRemote(tk, false);
+            showToast('スレッドを削除しました');
+        }
+
+        function clearAllDmThreadsAndSync() {
+            if (!window.confirm('すべてのDMを削除しますか？\n（同期オン時はサーバー上のDMも空になります）')) return;
+            state.threads = [];
+            state.currentChatWith = '';
+            state.currentChatPeerUserId = '';
+            while (state.viewStack.length > 1 && state.viewStack[state.viewStack.length - 1] === 'chat') {
+                state.viewStack.pop();
+            }
+            if (state.viewStack.length) {
+                activateView(state.viewStack[state.viewStack.length - 1]);
+            }
+            setUnreadFlag();
+            renderDmThreads();
+            renderChat();
+            liveSyncClearDmRemote('', true);
+            showToast('DMを削除しました');
+        }
+
         function liveSyncPullOnce() {
             if (!liveSyncEnabled()) return;
             var base = getLiveSyncBase();
@@ -2580,10 +3492,9 @@
             else if (tab === 'notifications') t.textContent = '通知';
             else if (tab === 'chat') t.textContent = state.currentChatWith || 'DM';
             else if (tab === 'organizer') t.textContent = 'プロフィール';
+            else if (tab === 'accountProfileEdit') t.textContent = 'プロフィール編集';
             else t.textContent = '検索';
         }
-
-        function updateHeaderPoints() { /* removed (thanks only) */ }
 
         function renderHistoryCards(containerEl, historyItems) {
             if (!containerEl) return;
@@ -2642,7 +3553,6 @@
             document.getElementById('appShell').dataset.tab = id;
             setHeaderTitleForTab(id);
             document.getElementById('appShell').classList.toggle('has-back', state.viewStack.length > 1);
-            updateHeaderPoints();
             if (id === 'search') {
                 var sq = document.getElementById('search-q');
                 if (sq && typeof state.filters.q === 'string') sq.value = state.filters.q;
@@ -2660,6 +3570,12 @@
                     if (titleInput) titleInput.focus({ preventScroll: true });
                 }, 50);
             }
+            if (id === 'dm' || id === 'chat') {
+                if (markAllDmAsRead()) {
+                    renderDmThreads();
+                }
+                setUnreadFlag();
+            }
             // Keep bottom nav highlight consistent on back navigation.
             document.querySelectorAll('.bottom-nav .nav-item').forEach(function (n) { n.classList.remove('active'); });
             if (id === 'home') {
@@ -2670,6 +3586,15 @@
                 var accountNav = document.querySelector('.bottom-nav .nav-item[data-section="account"]');
                 if (accountNav) accountNav.classList.add('active');
                 renderAccount();
+            }
+            if (id === 'accountProfileEdit') {
+                populateProfileEditForm();
+                var accountNav2 = document.querySelector('.bottom-nav .nav-item[data-section="account"]');
+                if (accountNav2) accountNav2.classList.add('active');
+                window.setTimeout(function () {
+                    var el = document.getElementById('profileEditName');
+                    if (el) el.focus({ preventScroll: true });
+                }, 80);
             }
             syncAccountTabNotifDot();
         }
@@ -2692,18 +3617,28 @@
             if (navEl) navEl.classList.add('active');
         }
 
+        function markAllDmAsRead() {
+            var changed = false;
+            (state.threads || []).forEach(function (t) {
+                if (t && t.unread) {
+                    t.unread = false;
+                    changed = true;
+                }
+            });
+            return changed;
+        }
+
         function setUnreadFlag() {
             var has = state.threads.some(function (t) { return t.unread; });
             document.getElementById('appShell').classList.toggle('has-unread', has);
         }
 
         function hasPendingJoinNotifications() {
-            var me = syncAccountNameFromDom();
             return (state.notifications || []).some(function (n) {
                 if (!n || n.type !== 'join_request') return false;
                 var st = n.joinStatus != null ? n.joinStatus : 'pending';
                 if (st !== 'pending') return false;
-                return accountsMatch(n.organizerName, me);
+                return notifIsOrganizer(n);
             });
         }
 
@@ -2722,19 +3657,105 @@
             syncAccountTabNotifDot();
         }
 
+        function getDismissedNotifIdMap() {
+            try {
+                var raw = localStorage.getItem('tealfolder.dismissedNotifs.v1');
+                if (!raw) return {};
+                var o = JSON.parse(raw);
+                if (!o || typeof o !== 'object') return {};
+                return o;
+            } catch (_) {
+                return {};
+            }
+        }
+
+        function persistDismissedNotifIdMap(map) {
+            try {
+                localStorage.setItem('tealfolder.dismissedNotifs.v1', JSON.stringify(map || {}));
+            } catch (_) {}
+        }
+
+        function isNotificationDismissedFromList(id) {
+            return !!(id && getDismissedNotifIdMap()[id]);
+        }
+
+        function dismissNotificationFromList(id) {
+            if (!id) return;
+            var m = getDismissedNotifIdMap();
+            m[id] = true;
+            persistDismissedNotifIdMap(m);
+        }
+
+        function deleteNotificationById(id) {
+            dismissNotificationFromList(id);
+            renderNotifications();
+            updateNotifBadge();
+            syncDetailActionBars();
+        }
+
+        function createNotifDismissButton(n) {
+            var dismiss = document.createElement('button');
+            dismiss.type = 'button';
+            dismiss.className = 'notif-dismiss';
+            dismiss.setAttribute('aria-label', 'この通知を一覧から消す');
+            dismiss.textContent = '×';
+            dismiss.addEventListener('click', function (e) {
+                e.stopPropagation();
+                if (n && n.id) deleteNotificationById(n.id);
+            });
+            return dismiss;
+        }
+
+        function clearAllNotificationsFromList() {
+            if (!window.confirm('通知をすべて一覧から消しますか？\n参加・承認の状態は変わりません（この端末だけ非表示になります）。')) return;
+            var me = syncAccountNameFromDom();
+            var rawList = state.notifications || [];
+            var visible = rawList.filter(function (n) {
+                if (!n || isNotificationDismissedFromList(n.id)) return false;
+                if (n.type === 'thanks_granted') {
+                    if (n.applicantUserId && getMyUserId()) return n.applicantUserId === getMyUserId();
+                    return accountsMatch(n.applicantName, me);
+                }
+                if (n.type === 'thanks_tip') {
+                    return !!(getMyUserId() && n.organizerUserId === getMyUserId());
+                }
+                if (n.type !== 'join_request') return true;
+                return notifIsOrganizer(n) || notifIsApplicant(n);
+            });
+            var m = getDismissedNotifIdMap();
+            visible.forEach(function (n) {
+                if (n && n.id) m[n.id] = true;
+            });
+            persistDismissedNotifIdMap(m);
+            renderNotifications();
+            updateNotifBadge();
+            syncDetailActionBars();
+            showToast('通知を消しました');
+        }
+
         function renderNotifications() {
             var wrap = document.getElementById('notificationList');
             if (!wrap) return;
             wrap.innerHTML = '';
             consumeThanksGrantedForMe();
+            consumeThanksTipForOrganizer();
             var me = syncAccountNameFromDom();
             var rawList = state.notifications || [];
             var list = rawList.filter(function (n) {
                 if (!n) return false;
-                if (n.type === 'thanks_granted') return accountsMatch(n.applicantName, me);
+                if (isNotificationDismissedFromList(n.id)) return false;
+                if (n.type === 'thanks_granted') {
+                    if (n.applicantUserId && getMyUserId()) return n.applicantUserId === getMyUserId();
+                    return accountsMatch(n.applicantName, me);
+                }
+                if (n.type === 'thanks_tip') {
+                    return !!(getMyUserId() && n.organizerUserId === getMyUserId());
+                }
                 if (n.type !== 'join_request') return true;
-                return accountsMatch(n.organizerName, me) || accountsMatch(n.applicantName, me);
+                return notifIsOrganizer(n) || notifIsApplicant(n);
             });
+            var notifTools = document.getElementById('notifListTools');
+            if (notifTools) notifTools.hidden = list.length === 0;
             if (!list.length) {
                 var empty = document.createElement('div');
                 empty.className = 'card';
@@ -2743,7 +3764,7 @@
                 empty.style.fontSize = '0.92rem';
                 empty.style.padding = '18px 14px';
                 empty.style.lineHeight = '1.55';
-                empty.textContent = '通知はまだありません。参加申請が届くと募集者に表示され、承認すると参加者へ承認として届きます。当日のあと、募集者からありがとうが届くと参加者のありがとうが増えます（お試し）。';
+                empty.textContent = '通知はまだありません。参加申請が届くと募集者に表示され、承認すると参加者へ承認として届きます。当日のあと、募集者からありがとうが届くと参加者のありがとうが増えます。';
                 wrap.appendChild(empty);
                 updateNotifBadge();
                 return;
@@ -2762,6 +3783,10 @@
                     tgAt.textContent = n.at || '';
                     tgTop.appendChild(tgTy);
                     tgTop.appendChild(tgAt);
+                    var tgHead = document.createElement('div');
+                    tgHead.className = 'notif-row-head';
+                    tgHead.appendChild(tgTop);
+                    tgHead.appendChild(createNotifDismissButton(n));
                     var tgTit = document.createElement('div');
                     tgTit.className = 'notif-title';
                     tgTit.textContent = '募集者からありがとうが届きました';
@@ -2770,8 +3795,13 @@
                     tgBody.textContent = '「' + (n.volTitle || '募集') + '」';
                     var tgMeta = document.createElement('div');
                     tgMeta.className = 'notif-meta';
-                    tgMeta.textContent = 'ありがとうが1つ付与されました（お試し）。';
-                    tgRow.appendChild(tgTop);
+                    var tgAmt = 1;
+                    if (n.thanksAmount != null) {
+                        var tgx = Number(n.thanksAmount);
+                        tgAmt = isFinite(tgx) && tgx >= 1 ? Math.floor(tgx) : 1;
+                    }
+                    tgMeta.textContent = 'ありがとうが' + String(tgAmt) + '付与されました。';
+                    tgRow.appendChild(tgHead);
                     tgRow.appendChild(tgTit);
                     tgRow.appendChild(tgBody);
                     tgRow.appendChild(tgMeta);
@@ -2789,8 +3819,47 @@
                     return;
                 }
 
-                var isHost = n.type === 'join_request' && accountsMatch(n.organizerName, me);
-                var isApplicant = n.type === 'join_request' && accountsMatch(n.applicantName, me);
+                if (n.type === 'thanks_tip') {
+                    var tipRow = document.createElement('div');
+                    tipRow.className = 'notif-row';
+                    var tipTop = document.createElement('div');
+                    tipTop.className = 'notif-row-top';
+                    var tipTy = document.createElement('span');
+                    tipTy.className = 'notif-type';
+                    tipTy.textContent = 'ありがとう';
+                    var tipAt = document.createElement('span');
+                    tipAt.className = 'notif-at';
+                    tipAt.textContent = n.at || '';
+                    tipTop.appendChild(tipTy);
+                    tipTop.appendChild(tipAt);
+                    var tipHead = document.createElement('div');
+                    tipHead.className = 'notif-row-head';
+                    tipHead.appendChild(tipTop);
+                    tipHead.appendChild(createNotifDismissButton(n));
+                    var tipTit = document.createElement('div');
+                    tipTit.className = 'notif-title';
+                    tipTit.textContent = (n.applicantName || '参加者') + 'さんからありがとうが届きました';
+                    var tipBody = document.createElement('div');
+                    tipBody.className = 'notif-body';
+                    tipBody.textContent = n.volTitle ? ('「' + n.volTitle + '」') : 'お礼のありがとう';
+                    var tipMeta = document.createElement('div');
+                    tipMeta.className = 'notif-meta';
+                    var tipAmt = 1;
+                    if (n.thanksAmount != null) {
+                        var tipx = Number(n.thanksAmount);
+                        tipAmt = isFinite(tipx) && tipx >= 1 ? Math.floor(tipx) : 1;
+                    }
+                    tipMeta.textContent = 'ありがとうが' + String(tipAmt) + '加わりました。';
+                    tipRow.appendChild(tipHead);
+                    tipRow.appendChild(tipTit);
+                    tipRow.appendChild(tipBody);
+                    tipRow.appendChild(tipMeta);
+                    wrap.appendChild(tipRow);
+                    return;
+                }
+
+                var isHost = n.type === 'join_request' && notifIsOrganizer(n);
+                var isApplicant = n.type === 'join_request' && notifIsApplicant(n);
                 var row = document.createElement('div');
                 var joinSt = (n.type === 'join_request') ? (n.joinStatus != null ? n.joinStatus : 'pending') : 'none';
                 var isPendingJoin = n.type === 'join_request' && joinSt === 'pending' && isHost;
@@ -2832,7 +3901,7 @@
                                 + (n.thanksGranted ? ' 当日のお礼のありがとうも届いています。' : ' 当日のあと、募集者からありがとうが届きます。');
                         }
                     } else if (isHost) {
-                        meta.textContent = '承認すると、参加者（' + (n.applicantName || '') + '）へ承認の通知とDMで進められます（お試し）。';
+                        meta.textContent = '承認すると、参加者（' + (n.applicantName || '') + '）へ承認の通知とDMで進められます。';
                     } else if (isApplicant) {
                         meta.textContent = '募集者の承認をお待ちください。';
                     } else {
@@ -2841,7 +3910,11 @@
                 } else {
                     meta.textContent = '';
                 }
-                row.appendChild(top);
+                var joinHead = document.createElement('div');
+                joinHead.className = 'notif-row-head';
+                joinHead.appendChild(top);
+                joinHead.appendChild(createNotifDismissButton(n));
+                row.appendChild(joinHead);
                 row.appendChild(tit);
                 row.appendChild(body);
                 if (meta.textContent) row.appendChild(meta);
@@ -2862,7 +3935,7 @@
                                 updateNotifBadge();
                                 renderNotifications();
                                 syncDetailActionBars();
-                                showToast('承認しました。参加者に承認通知が届きます（お試し）。');
+                                showToast('承認しました。参加者に承認通知が届きます。');
                             });
                             var btnView = document.createElement('button');
                             btnView.type = 'button';
@@ -2893,21 +3966,13 @@
                         btnDm.textContent = 'DMで連絡';
                         btnDm.addEventListener('click', function (e) {
                             e.stopPropagation();
-                            ensureThread(dmTarget);
-                            var th = state.threads.find(function (t) { return t.with === dmTarget; });
-                            if (th) {
-                                th.messages.push({
-                                    me: true,
-                                    text: isHost
-                                        ? '参加申請を承認しました。詳細はこちらからご連絡します（お試し）。'
-                                        : '承認ありがとうございます。当日までに確認したいことがあればお送りします（お試し）。'
-                                });
-                                th.lastAt = '今';
-                                th.unread = false;
-                            }
+                            var dmPeer = isHost ? (n.applicantUserId || '') : (n.organizerUserId || '');
+                            appendOutgoingDm(dmTarget, isHost
+                                ? '参加申請を承認しました。詳細はこちらからご連絡します。'
+                                : '承認ありがとうございます。当日までに確認したいことがあればお送りします。', dmPeer);
                             setUnreadFlag();
                             renderDmThreads();
-                            openChat(dmTarget);
+                            openChat(dmTarget, dmPeer);
                         });
                         actions.appendChild(btnDm);
                     }
@@ -2919,18 +3984,38 @@
             updateNotifBadge();
         }
 
-        function ensureThread(withName) {
-            var t = state.threads.find(function (x) { return x.with === withName; });
-            if (t) return t;
-            var avatar = (withName || '？').trim().slice(0, 1) || '？';
-            t = { with: withName, avatar: avatar, unread: true, lastAt: '今', messages: [] };
+        function ensureThread(withName, peerUserId) {
+            peerUserId = peerUserId || '';
+            var t = null;
+            if (peerUserId) {
+                t = state.threads.find(function (x) { return x.peerUserId === peerUserId; });
+            }
+            if (!t && withName) {
+                t = state.threads.find(function (x) { return x.with === withName; });
+            }
+            if (t) {
+                if (peerUserId) t.peerUserId = peerUserId;
+                if (withName) {
+                    t.with = withName;
+                    t.avatar = (withName || '？').trim().slice(0, 1) || '？';
+                }
+                return t;
+            }
+            var dis = withName || displayNameForUserId(peerUserId) || '？';
+            var avatar = (dis || '？').trim().slice(0, 1) || '？';
+            t = { with: dis, avatar: avatar, unread: true, lastAt: '今', messages: [] };
+            if (peerUserId) t.peerUserId = peerUserId;
             state.threads.unshift(t);
             return t;
         }
 
         function openDetail(volId) {
             state.currentDetailId = volId;
-            var d = state.vols[volId] || state.vols['vol-2'];
+            var d = state.vols[volId];
+            if (!d) {
+                showToast('この募集は見つかりません');
+                return;
+            }
             var title = document.getElementById('detailTitle');
             var desc = document.getElementById('detailDesc');
             if (title) title.textContent = d.title || '';
@@ -2977,20 +4062,26 @@
             }
 
             var dmBtn = document.getElementById('detailDmBtn');
-            if (dmBtn) dmBtn.dataset.chatWith = d.chatWith || '主催者';
+            if (dmBtn) {
+                dmBtn.dataset.chatWith = d.chatWith || '主催者';
+                if (d.hostedByUserId) dmBtn.dataset.organizerUserId = d.hostedByUserId;
+                else delete dmBtn.dataset.organizerUserId;
+            }
 
             navigateTo('detail');
             syncDetailActionBars();
         }
 
-        function openChat(withName) {
+        function openChat(withName, peerUserId) {
             state.currentChatWith = withName || 'DM';
+            state.currentChatPeerUserId = peerUserId || '';
             navigateTo('chat');
             renderChat();
         }
 
-        function openOrganizerProfile(withName) {
+        function openOrganizerProfile(withName, peerUserId) {
             state.currentOrganizerName = withName || '主催者';
+            state.currentOrganizerUserId = peerUserId || '';
             var dmBtn = document.getElementById('organizerDmBtn');
             if (dmBtn) dmBtn.dataset.chatWith = withName || '主催者';
             renderOrganizerProfile();
@@ -3069,27 +4160,49 @@
         function renderDmThreads() {
             var wrap = document.getElementById('dmThreads');
             if (!wrap) return;
+            var tools = document.getElementById('dmListTools');
+            if (tools) tools.hidden = state.threads.length === 0;
             wrap.innerHTML = '';
             state.threads.forEach(function (t) {
                 var card = document.createElement('div');
-                card.className = 'card card-clickable';
+                card.className = 'card dm-thread-card';
                 var last = t.messages[t.messages.length - 1];
                 var preview = last ? last.text : '…';
                 card.innerHTML =
-                    '<div class="dm-thread">' +
-                        '<div class="dm-avatar">' + t.avatar + '</div>' +
-                        '<div class="dm-meta">' +
-                            '<div class="dm-name">' + t.with + (t.unread ? ' <span style="color:var(--accent);font-size:0.75rem;font-weight:900;">●</span>' : '') + '</div>' +
-                            '<div class="dm-preview">' + preview + '</div>' +
+                    '<div class="dm-thread-card-inner" role="button" tabindex="0">' +
+                        '<div class="dm-thread">' +
+                            '<div class="dm-avatar">' + t.avatar + '</div>' +
+                            '<div class="dm-meta">' +
+                                '<div class="dm-name">' + t.with + (t.unread ? ' <span style="color:var(--accent);font-size:0.75rem;font-weight:900;">●</span>' : '') + '</div>' +
+                                '<div class="dm-preview">' + preview + '</div>' +
+                            '</div>' +
+                            '<div style="color:#6a6a6a;font-size:0.75rem;flex-shrink:0;">' + (t.lastAt || '') + '</div>' +
                         '</div>' +
-                        '<div style="color:#6a6a6a;font-size:0.75rem;">' + (t.lastAt || '') + '</div>' +
-                    '</div>';
-                card.addEventListener('click', function () {
+                    '</div>' +
+                    '<button type="button" class="dm-thread-delete" aria-label="このスレッドを削除">×</button>';
+                var openThread = function () {
                     t.unread = false;
                     setUnreadFlag();
-                    openChat(t.with);
+                    openChat(t.with, t.peerUserId || '');
                     renderDmThreads();
-                });
+                };
+                var inner = card.querySelector('.dm-thread-card-inner');
+                if (inner) {
+                    inner.addEventListener('click', openThread);
+                    inner.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            openThread();
+                        }
+                    });
+                }
+                var delBtn = card.querySelector('.dm-thread-delete');
+                if (delBtn) {
+                    delBtn.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        removeDmThreadAndSync(t);
+                    });
+                }
                 wrap.appendChild(card);
             });
         }
@@ -3098,13 +4211,27 @@
             var wrap = document.getElementById('chatMessages');
             if (!wrap) return;
             wrap.innerHTML = '';
-            var t = state.threads.find(function (x) { return x.with === state.currentChatWith; });
+            var t = findChatThread();
             if (!t) return;
+            function renderedLineCount(el) {
+                if (!el) return 1;
+                var txt = String(el.textContent || '');
+                if (!txt) return 1;
+                try {
+                    var range = document.createRange();
+                    range.selectNodeContents(el);
+                    var rects = range.getClientRects();
+                    if (rects && rects.length) return rects.length;
+                } catch (_) {}
+                return txt.indexOf('\n') !== -1 ? 2 : 1;
+            }
             t.messages.forEach(function (m) {
                 var b = document.createElement('div');
                 b.className = 'bubble' + (m.me ? ' me' : '');
                 b.textContent = m.text;
                 wrap.appendChild(b);
+                var isMulti = renderedLineCount(b) >= 2;
+                b.classList.toggle('bubble--multi', isMulti);
             });
             wrap.scrollTop = wrap.scrollHeight;
         }
@@ -3135,10 +4262,143 @@
         function renderAccount() {
             var thanksCountEl = document.getElementById('accountThanksCount');
             if (thanksCountEl) thanksCountEl.textContent = String(state.profile.thanksCount.toLocaleString());
-            updateHeaderPoints();
             var list = document.getElementById('accountHistoryList');
             if (list) renderHistoryCards(list, state.history);
             renderAccountMyOpenings();
+            var phoneBlk = document.getElementById('accountPhoneAuthBlock');
+            if (phoneBlk) {
+                phoneBlk.hidden = !PHONE_LOGIN_ACCOUNT_UI_ENABLED || !liveSyncEnabled();
+                var pst = document.getElementById('accountPhoneAuthStatus');
+                if (pst && liveSyncEnabled() && PHONE_LOGIN_ACCOUNT_UI_ENABLED) {
+                    if (getMyUserId()) {
+                        pst.textContent = state.auth.phoneE164
+                            ? ('ログイン中（' + state.auth.phoneE164 + '）')
+                            : 'ログイン中（電話番号は未登録・この端末で発行されたID）';
+                    } else {
+                        pst.textContent = '電話番号でログインすると、同じ番号の端末同士で同じアカウントになります。';
+                    }
+                }
+            }
+        }
+
+        function openPhoneAuthModal() {
+            if (!PHONE_LOGIN_ACCOUNT_UI_ENABLED) return;
+            var m = document.getElementById('phoneAuthModal');
+            var phoneIn = document.getElementById('phoneAuthInput');
+            var codeIn = document.getElementById('phoneAuthCodeInput');
+            var dnIn = document.getElementById('phoneAuthDisplayName');
+            if (codeIn) codeIn.value = '';
+            if (dnIn) dnIn.value = state.profile.name || state.auth.displayName || '';
+            if (m) m.classList.add('open');
+            window.setTimeout(function () {
+                if (phoneIn) phoneIn.focus();
+            }, 80);
+        }
+
+        function closePhoneAuthModal() {
+            var m = document.getElementById('phoneAuthModal');
+            if (m) m.classList.remove('open');
+        }
+
+        function phoneAuthSendCode() {
+            var base = getLiveSyncBase();
+            if (!base) {
+                showToast(
+                    '同期がオフです（sync-server で npm start し、http://127.0.0.1:3847/index.html?sync=auto のように HTTP で開いてください。file:// では電話認証は使えません）'
+                );
+                return;
+            }
+            var phoneIn = document.getElementById('phoneAuthInput');
+            var phone = phoneIn && String(phoneIn.value || '').trim();
+            if (!phone) {
+                showToast('電話番号を入力してください');
+                return;
+            }
+            fetch(base + '/api/auth/phone/send', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phone })
+            })
+                .then(syncJsonFromFetchResponse)
+                .then(function (x) {
+                    if (x.j && x.j.devMode) {
+                        showToast('開発モード: サーバーのターミナルに認証コードが出ます');
+                    } else if (x.ok) {
+                        showToast('SMSを送信しました');
+                    } else {
+                        var sendErr =
+                            (x.j && (x.j.hint || x.j.error)) ||
+                            (x.status ? 'HTTP ' + x.status : '') ||
+                            '送信できませんでした';
+                        if (x.status === 404) {
+                            sendErr +=
+                                '（同期サーバーが POST を受け付けていません。3847 を使う古い node を止め、Teertab/sync-server で npm start し直してください。ブラウザで /api/health に phoneOtp:true があるか確認）';
+                        }
+                        showToast(sendErr);
+                    }
+                })
+                .catch(function (err) {
+                    var msg = (err && err.message) || '';
+                    showToast(
+                        msg
+                            ? '送信に失敗しました（' + msg + '）'
+                            : '送信に失敗しました（同期サーバーに届いていません。npm start 後に http://127.0.0.1:3847/index.html?sync=auto で開いてください）'
+                    );
+                });
+        }
+
+        function phoneAuthVerifySubmit() {
+            var base = getLiveSyncBase();
+            if (!base) return;
+            var phoneIn = document.getElementById('phoneAuthInput');
+            var codeIn = document.getElementById('phoneAuthCodeInput');
+            var dnIn = document.getElementById('phoneAuthDisplayName');
+            var phone = phoneIn && String(phoneIn.value || '').trim();
+            var code = codeIn && String(codeIn.value || '').replace(/\D/g, '');
+            var dn = dnIn && String(dnIn.value || '').trim();
+            if (!phone || !code) {
+                showToast('電話番号と認証コードを入力してください');
+                return;
+            }
+            fetch(base + '/api/auth/phone/verify', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: phone, code: code, displayName: dn })
+            })
+                .then(syncJsonFromFetchResponse)
+                .then(function (x) {
+                    var j = x.j;
+                    if (!x.ok || !j || !j.userId || !j.secret) {
+                        showToast(
+                            (j && (j.hint || j.error)) ||
+                                (x.status ? 'HTTP ' + x.status : '') ||
+                                '認証に失敗しました'
+                        );
+                        return;
+                    }
+                    state.auth.userId = j.userId;
+                    state.auth.secret = j.secret;
+                    state.auth.displayName = j.displayName || '';
+                    state.auth.phoneE164 = j.phoneE164 || '';
+                    if (state.auth.displayName && !hasSavedProfileInStorage()) {
+                        state.profile.name = state.auth.displayName;
+                    }
+                    persistTealAuthToStorage();
+                    applyProfileToAccountDom();
+                    populateProfileEditForm();
+                    renderAccount();
+                    closePhoneAuthModal();
+                    showToast('ログインしました');
+                    liveSyncPullOnce();
+                })
+                .catch(function (err) {
+                    var msg = (err && err.message) || '';
+                    showToast(
+                        msg
+                            ? '認証に失敗しました（' + msg + '）'
+                            : '認証に失敗しました（ネットワーク。同期サーバーの URL で開いているか確認してください）'
+                    );
+                });
         }
 
         function renderOrganizerProfile() {
@@ -3154,22 +4414,17 @@
             }
 
             var organizerBioEl = document.getElementById('organizerBio');
-            var stats = {
-                '品川コミュニティ': { thanksCount: 24, bio: '品川コミュニティの自己紹介（お試し）。丁寧に段取りを案内します。お気軽にDMください。' },
-                '児童館スタッフ': { thanksCount: 16, bio: '児童館スタッフの自己紹介（お試し）。子どもたちの笑顔を一緒に作りましょう。' },
-                '字幕チーム': { thanksCount: 9, bio: '字幕チームの自己紹介（お試し）。誤字脱字チェックが得意な方歓迎。' },
-                '地域FM': { thanksCount: 13, bio: '地域FMの自己紹介（お試し）。あたたかいトーンのデータ提供をお願いします。' },
-                '主催者': { thanksCount: 20, bio: '自己紹介（お試し）。スムーズに案内できるよう整えています。' }
-            };
-
-            var s = stats[name] || stats['主催者'];
-
+            var uid = state.currentOrganizerUserId || '';
+            var pub = uid && state.usersPublic ? state.usersPublic[uid] : null;
+            var bioText = pub && String(pub.bio || '').trim() ? String(pub.bio).trim() : '自己紹介はまだありません。';
             var thanksCountEl = document.getElementById('organizerThanksCount');
             if (thanksCountEl) {
-                var bonus = state.organizerThanksBonus && state.organizerThanksBonus[name] ? state.organizerThanksBonus[name] : 0;
-                thanksCountEl.textContent = String((s.thanksCount + bonus).toLocaleString());
+                var pubThanks = pub && typeof pub.thanksCount === 'number' && isFinite(pub.thanksCount)
+                    ? Math.max(0, Math.floor(pub.thanksCount))
+                    : null;
+                thanksCountEl.textContent = pubThanks != null ? String(pubThanks.toLocaleString()) : '—';
             }
-            if (organizerBioEl) organizerBioEl.textContent = s.bio;
+            if (organizerBioEl) organizerBioEl.textContent = bioText;
 
             var openWrap = document.getElementById('organizerOpenCards');
             if (openWrap) {
@@ -3204,6 +4459,8 @@
         }
 
         function openJoinModal() {
+            var jb = document.getElementById('joinBtn');
+            if (jb && jb.disabled) return;
             var m = document.getElementById('joinModal');
             if (!m) return;
             m.classList.add('open');
@@ -3218,11 +4475,22 @@
             if (!m) return;
             m.classList.remove('open');
             state.pendingThankOrganizer = '';
+            state.pendingThankOrganizerUserId = '';
+            state.pendingThankVolTitle = '';
         }
-        function openThankOrganizerModal(organizerName, volTitle) {
+        function openThankOrganizerModal(organizerName, volTitle, organizerUserId) {
             var org = String(organizerName || '募集者').trim() || '募集者';
             var title = String(volTitle || 'この募集').trim() || 'この募集';
             state.pendingThankOrganizer = org;
+            state.pendingThankOrganizerUserId = organizerUserId || '';
+            state.pendingThankVolTitle = title;
+            var bal = Math.max(0, Math.floor(state.profile.thanksCount || 0));
+            var amtEl = document.getElementById('thankOrganizerAmount');
+            if (amtEl) {
+                amtEl.min = '1';
+                amtEl.max = String(Math.max(1, bal));
+                amtEl.value = String(Math.min(1, Math.max(1, bal)));
+            }
             var ta = document.getElementById('thankOrganizerText');
             if (ta) {
                 ta.value = '「' + title + '」のご案内ありがとうございます。参加を楽しみにしています！';
@@ -3241,34 +4509,64 @@
                 closeThankOrganizerModal();
                 return;
             }
+            var orgUid = String(state.pendingThankOrganizerUserId || '').trim();
+            if (!orgUid || orgUid.indexOf('usr-') !== 0) {
+                showToast('募集者の同期アカウント情報がないため、ありがとうを送れません（同期ログインと募集のホスト情報が必要です）');
+                return;
+            }
+            var amtEl = document.getElementById('thankOrganizerAmount');
+            var per = parseInt(amtEl && amtEl.value, 10);
+            if (!isFinite(per) || per < 1) {
+                showToast('1以上の数を指定してください');
+                return;
+            }
+            var bal = Math.max(0, Math.floor(state.profile.thanksCount || 0));
+            if (bal < per) {
+                showToast('ありがとうが足りません（所持 ' + bal + '）');
+                return;
+            }
+            state.profile.thanksCount = bal - per;
+            persistProfileThanksCount();
             var ta = document.getElementById('thankOrganizerText');
             var raw = ta ? String(ta.value || '').trim() : '';
             var text = raw || 'ありがとうございます。参加を楽しみにしています！';
-            var th = ensureThread(org);
-            th.messages.push({ me: true, text: text });
-            th.lastAt = '今';
-            th.unread = false;
-            if (!state.organizerThanksBonus) state.organizerThanksBonus = {};
-            state.organizerThanksBonus[org] = (state.organizerThanksBonus[org] || 0) + 1;
+            appendOutgoingDm(org, text, orgUid);
+            var tipN = {
+                id: 'notif-tip-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
+                type: 'thanks_tip',
+                at: '今',
+                organizerName: org,
+                organizerUserId: orgUid,
+                applicantName: syncAccountNameFromDom() || '参加者',
+                applicantUserId: getMyUserId() || undefined,
+                volTitle: state.pendingThankVolTitle || '',
+                thanksAmount: per
+            };
+            liveSyncPostNotification(tipN);
             setUnreadFlag();
             renderDmThreads();
             closeThankOrganizerModal();
-            showToast('お礼を送信しました');
+            showToast('お礼とありがとうを送信しました');
         }
         function confirmJoin() {
-            var v = state.vols[state.currentDetailId] || state.vols['vol-2'];
+            var v = state.vols[state.currentDetailId];
+            if (!v) {
+                closeJoinModal();
+                return;
+            }
             if (isOwnVol(v)) {
                 closeJoinModal();
                 return;
             }
             var organizerName = v.chatWith || '募集者';
+            var orgUid = v.hostedByUserId || '';
             var volTitle = v.title || '';
-            state.history.unshift({ title: v.title, meta: '2026年4月 · ' + v.place + ' · 参加申請（お試し）' });
+            state.history.unshift({ title: v.title, meta: '2026年4月 · ' + v.place + ' · 参加申請' });
             renderAccount();
-            var th = ensureThread(organizerName);
+            var th = ensureThread(organizerName, orgUid);
             th.unread = true;
             th.lastAt = '今';
-            th.messages.push({ me: false, text: '参加申請ありがとうございます！承認後に当日の流れを共有します（お試し）。' });
+            th.messages.push({ me: false, text: '参加申請ありがとうございます！承認後に当日の流れを共有します。' });
             setUnreadFlag();
             renderDmThreads();
             var applicant = state.profile.name || '参加者';
@@ -3279,6 +4577,8 @@
                 at: '今',
                 organizerName: organizerName,
                 applicantName: applicant,
+                organizerUserId: orgUid || undefined,
+                applicantUserId: getMyUserId() || undefined,
                 volTitle: volTitle,
                 volId: v.id
             };
@@ -3287,20 +4587,22 @@
             updateNotifBadge();
             renderNotifications();
             closeJoinModal();
-            showToast('参加申請しました。募集者に参加申請通知が届きます（お試し）。');
+            syncDetailActionBars();
+            showToast('参加申請しました。募集者に参加申請通知が届きます。');
         }
 
         (function () {
+            loadPersistedProfile();
+            applyProfileToAccountDom();
             var USER_VOLS_STORAGE_KEY = 'tealfolder.userVols.v1';
             var deviceOwnerKey = getDeviceOwnerKey();
+            ensureAuthSession(function () {
             function getCurrentUserProfile() {
-                var nameEl = document.querySelector('#account .account-name');
-                var avatarEl = document.querySelector('#account .account-avatar');
-                var name = String((nameEl && nameEl.textContent) || state.profile.name || 'ユーザーネーム').trim();
-                var avatar = String((avatarEl && avatarEl.textContent) || state.profile.avatar || '🙂').trim();
-                state.profile.name = name || 'ユーザーネーム';
-                state.profile.avatar = avatar || '🙂';
-                return { name: state.profile.name, avatar: state.profile.avatar };
+                var name = String(state.profile.name || '').trim() || 'ユーザーネーム';
+                var avatar = String(state.profile.avatar || '').trim() || '🙂';
+                state.profile.name = name;
+                state.profile.avatar = avatar;
+                return { name: name, avatar: avatar };
             }
             function escapeHtml(s) {
                 return String(s == null ? '' : s)
@@ -3338,8 +4640,36 @@
                     return false;
                 }
             }
+            (function migrateLocalUserVolsStorage() {
+                try {
+                    var scrub = false;
+                    try {
+                        scrub = new URLSearchParams(window.location.search).get('scrubLocalVols') === '1';
+                    } catch (_) {}
+                    var raw = localStorage.getItem(USER_VOLS_STORAGE_KEY);
+                    if (!raw) return;
+                    var parsed = JSON.parse(raw);
+                    if (!Array.isArray(parsed)) return;
+                    var next = parsed.filter(shouldKeepVolInLocalCache);
+                    if (next.length !== parsed.length) {
+                        saveUserVols(next);
+                        showToast(scrub ? 'この端末の募集保存を整理しました（他人分を削除）' : '保存されていた他人の募集を取り除きました');
+                    } else if (scrub) {
+                        showToast('整理の必要はありませんでした');
+                    }
+                    if (scrub) {
+                        try {
+                            var u = new URL(window.location.href);
+                            u.searchParams.delete('scrubLocalVols');
+                            window.history.replaceState({}, '', u.pathname + u.search + u.hash);
+                        } catch (_) {}
+                    }
+                } catch (_) {}
+            })();
             function persistUserVol(v) {
                 if (v && !v.hostedByLocal) v.hostedByLocal = deviceOwnerKey;
+                var authUid = getMyUserId();
+                if (v && authUid) v.hostedByUserId = authUid;
                 if (v && v.id) state.myHostedVolIds[v.id] = true;
                 var list = loadUserVols();
                 list = [v].concat(list.filter(function (x) { return x && x.id !== v.id; }));
@@ -3364,15 +4694,14 @@
                 card.setAttribute('data-open-detail', v.id);
 
                 var tags = (v.tags || []).slice(0, 4).map(hashTag).filter(Boolean);
-                var mediaStyle = '';
+                var mediaHtml = '';
                 if (v.image) {
-                    mediaStyle = ' style="background-image:url(\'' + escapeHtml(v.image) + '\');background-size:cover;background-position:center;"';
+                    mediaHtml = '<div class="home-card-media" aria-hidden="true" style="background-image:url(\'' + escapeHtml(v.image) + '\');background-size:cover;background-position:center;"></div>';
                 }
                 var iconHtml = isOwnVol(v)
                     ? '<div class="req-icon" role="button" tabindex="0" data-open-account="1" aria-label="アカウント"><span aria-hidden="true">' + escapeHtml(v.thumb || '🤝') + '</span></div>'
-                    : '<div class="req-icon" role="button" tabindex="0" data-open-organizer="' + escapeHtml(v.chatWith || '主催者') + '" aria-label="' + escapeHtml((v.chatWith || '主催者') + 'のプロフィール') + '"><span aria-hidden="true">' + escapeHtml(v.thumb || '🤝') + '</span></div>';
+                    : '<div class="req-icon" role="button" tabindex="0" data-open-organizer="' + escapeHtml(v.chatWith || '主催者') + '"' +(v.hostedByUserId ? (' data-organizer-user-id="' + escapeHtml(v.hostedByUserId) + '"') : '') + ' aria-label="' + escapeHtml((v.chatWith || '主催者') + 'のプロフィール') + '"><span aria-hidden="true">' + escapeHtml(v.thumb || '🤝') + '</span></div>';
                 card.innerHTML = '' +
-                    '<div class="home-card-media" aria-hidden="true"' + mediaStyle + '></div>' +
                     '<div class="home-card-body">' +
                         '<div class="req-card">' +
                             '<div class="req-card-top">' +
@@ -3391,7 +4720,8 @@
                                     (tags.length ? tags.map(function (t) { return '<span class="req-tag">' + escapeHtml(t) + '</span>'; }).join('') : '') +
                                 '</div>' +
                         '</div>' +
-                    '</div>';
+                    '</div>' +
+                    mediaHtml;
                 card.addEventListener('click', function () { openDetail(v.id); });
                 var icon = card.querySelector('.req-icon');
                 if (icon) {
@@ -3402,7 +4732,7 @@
                     var onIconActivate = function (e) {
                         e.stopPropagation();
                         if (isOwnVol(v)) goAccount();
-                        else openOrganizerProfile(v.chatWith || '主催者');
+                        else openOrganizerProfile(v.chatWith || '主催者', v.hostedByUserId || '');
                     };
                     icon.addEventListener('click', onIconActivate);
                     icon.addEventListener('keydown', function (e) {
@@ -3465,7 +4795,6 @@
                     var desc = String((descInput && descInput.value) || '').trim();
                     var tagRaw = String((tagsInput && tagsInput.value) || '');
                     var tags = tagRaw.split(/[\s,、]+/).map(hashTag).filter(Boolean);
-                    if (!tags.length) tags = ['#新規依頼'];
 
                     var id = 'vol-user-' + Date.now();
                     var v = {
@@ -3491,7 +4820,7 @@
                         tags: tags.slice(0, 4),
                         image: pendingImageDataUrl || '',
                         details: {
-                            what: [desc || '依頼内容は相談して決定します。'],
+                            what: [desc || '募集内容は相談して決定します。'],
                             who: ['参加できる方ならどなたでも'],
                             prep: ['特になし']
                         }
@@ -3503,6 +4832,7 @@
 
                     var homeCards = document.getElementById('homeCards');
                     if (homeCards) homeCards.insertBefore(createHomeCardElement(v), homeCards.firstChild);
+                    updateHomeEmptyState();
 
                     requestForm.reset();
                     pendingImageDataUrl = '';
@@ -3515,11 +4845,11 @@
                     renderAccount();
                     showSection('home', null);
                     if (!persistResult.ok) {
-                        showToast('依頼は追加しましたが保存に失敗しました');
+                        showToast('募集は追加しましたが保存に失敗しました');
                     } else if (persistResult.imageDropped) {
                         showToast('画像が大きいため、画像なしで保存しました');
                     } else {
-                        showToast('依頼を作成してホームに追加しました');
+                        showToast('募集を作成してホームに追加しました');
                     }
                 });
             }
@@ -3556,16 +4886,26 @@
             var storedUserVols = loadUserVols();
             if (storedUserVols.length) {
                 var me = getCurrentUserProfile();
+                var beforeN = storedUserVols.length;
                 storedUserVols = storedUserVols.map(function (v) {
                     if (!v || typeof v !== 'object') return v;
                     var updated = Object.assign({}, v);
                     if (updated.chatWith === 'あなた' || !updated.chatWith) updated.chatWith = me.name;
                     if (updated.thumb === '🆕' || !updated.thumb) updated.thumb = me.avatar;
-                    if (!updated.hostedByLocal) updated.hostedByLocal = deviceOwnerKey;
-                    if (updated.id) state.myHostedVolIds[updated.id] = true;
+                    if (!updated.hostedByUserId && !updated.hostedByLocal) {
+                        updated.hostedByLocal = deviceOwnerKey;
+                    }
                     return updated;
+                }).filter(shouldKeepVolInLocalCache);
+                storedUserVols.forEach(function (v) {
+                    if (v && v.id) state.myHostedVolIds[v.id] = true;
                 });
-                saveUserVols(storedUserVols);
+                if (storedUserVols.length !== beforeN) {
+                    saveUserVols(storedUserVols);
+                    if (storedUserVols.length < beforeN) {
+                        showToast('保存されていた他人の募集を取り除きました');
+                    }
+                }
                 var userVolMap = {};
                 storedUserVols.forEach(function (v) { userVolMap[v.id] = v; });
                 state.vols = Object.assign({}, userVolMap, state.vols);
@@ -3574,6 +4914,7 @@
                     for (var i = storedUserVols.length - 1; i >= 0; i--) {
                         homeCards.insertBefore(createHomeCardElement(storedUserVols[i]), homeCards.firstChild);
                     }
+                    updateHomeEmptyState();
                 }
             }
 
@@ -3620,19 +4961,19 @@
                 navigateTo('dm');
                 renderDmThreads();
             });
-
-            var settingsBtn = document.getElementById('settingsBtn');
-            if (settingsBtn) settingsBtn.addEventListener('click', function () {
-                showToast('設定（お試し）');
-            });
+            var dmClearAllBtn = document.getElementById('dmClearAllBtn');
+            if (dmClearAllBtn) dmClearAllBtn.addEventListener('click', clearAllDmThreadsAndSync);
 
             var notifBtn = document.getElementById('notifBtn');
             if (notifBtn) notifBtn.addEventListener('click', function () {
                 document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
                 navigateTo('notifications');
+                renderNotifications();
             });
+            var notifClearAllBtn = document.getElementById('notifClearAllBtn');
+            if (notifClearAllBtn) notifClearAllBtn.addEventListener('click', clearAllNotificationsFromList);
 
-            // Home feed "依頼する" button (XのPost風)
+            // Home feed "募集する" button (XのPost風)
             var requestFab = document.getElementById('requestFab');
             if (requestFab) {
                 requestFab.addEventListener('click', function () {
@@ -3653,7 +4994,8 @@
                 var open = function () {
                     var who = el.getAttribute('data-open-organizer') || '';
                     if (!who) return;
-                    openOrganizerProfile(who);
+                    var uid = el.getAttribute('data-organizer-user-id') || '';
+                    openOrganizerProfile(who, uid);
                 };
                 el.addEventListener('click', function (e) {
                     e.stopPropagation();
@@ -3681,7 +5023,22 @@
             });
 
             var detailHostThanksBtn = document.getElementById('detailHostThanksBtn');
-            if (detailHostThanksBtn) detailHostThanksBtn.addEventListener('click', grantThanksForCurrentVolFromHost);
+            if (detailHostThanksBtn) detailHostThanksBtn.addEventListener('click', openHostGrantThanksModal);
+            var hostGrantThanksModal = document.getElementById('hostGrantThanksModal');
+            var hostGrantThanksCancel = document.getElementById('hostGrantThanksCancel');
+            var hostGrantThanksConfirm = document.getElementById('hostGrantThanksConfirm');
+            var hostGrantThanksAmount = document.getElementById('hostGrantThanksAmount');
+            if (hostGrantThanksCancel) hostGrantThanksCancel.addEventListener('click', closeHostGrantThanksModal);
+            if (hostGrantThanksConfirm) hostGrantThanksConfirm.addEventListener('click', confirmHostGrantThanksFromModal);
+            if (hostGrantThanksAmount) {
+                hostGrantThanksAmount.addEventListener('input', updateHostGrantThanksModalSummary);
+                hostGrantThanksAmount.addEventListener('change', updateHostGrantThanksModalSummary);
+            }
+            if (hostGrantThanksModal) {
+                hostGrantThanksModal.addEventListener('click', function (e) {
+                    if (e.target === hostGrantThanksModal) closeHostGrantThanksModal();
+                });
+            }
 
             var thankOrganizerModal = document.getElementById('thankOrganizerModal');
             var thankOrganizerSkip = document.getElementById('thankOrganizerSkip');
@@ -3700,7 +5057,7 @@
                     var id = state.currentDetailId;
                     var vol = id && state.vols[id];
                     if (!vol || !isOwnVol(vol)) return;
-                    if (!window.confirm('この依頼を削除しますか？')) return;
+                    if (!window.confirm('この募集を削除しますか？')) return;
                     delete state.vols[id];
                     delete state.myHostedVolIds[id];
                     var nextList = loadUserVols().filter(function (x) { return x && x.id !== id; });
@@ -3715,7 +5072,7 @@
                     updateNotifBadge();
                     renderNotifications();
                     goBack();
-                    showToast('依頼を削除しました');
+                    showToast('募集を削除しました');
                 });
             }
 
@@ -3723,8 +5080,9 @@
             var detailDmBtn = document.getElementById('detailDmBtn');
             if (detailDmBtn) detailDmBtn.addEventListener('click', function () {
                 var who = detailDmBtn.dataset.chatWith || '主催者';
-                ensureThread(who);
-                openChat(who);
+                var peer = detailDmBtn.dataset.organizerUserId || '';
+                ensureThread(who, peer);
+                openChat(who, peer);
                 setUnreadFlag();
             });
 
@@ -3732,8 +5090,9 @@
             var organizerDmBtn = document.getElementById('organizerDmBtn');
             if (organizerDmBtn) organizerDmBtn.addEventListener('click', function () {
                 var who = organizerDmBtn.dataset.chatWith || '主催者';
-                ensureThread(who);
-                openChat(who);
+                var peer = state.currentOrganizerUserId || '';
+                ensureThread(who, peer);
+                openChat(who, peer);
                 setUnreadFlag();
             });
 
@@ -3770,19 +5129,21 @@
                 if (!chatText || !chatMessages) return;
                 var v = (chatText.value || '').trim();
                 if (!v) return;
-                var th = ensureThread(state.currentChatWith || 'DM');
-                th.messages.push({ me: true, text: v });
-                th.lastAt = '今';
+                var th = findChatThread();
+                appendOutgoingDm(state.currentChatWith || 'DM', v, th && th.peerUserId ? th.peerUserId : '');
                 chatText.value = '';
+                window.requestAnimationFrame(function () {
+                    if (chatText) chatText.value = '';
+                });
                 renderChat();
                 renderDmThreads();
             }
             if (chatSend) chatSend.addEventListener('click', sendChat);
             if (chatText) chatText.addEventListener('keydown', function (e) {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    sendChat();
-                }
+                if (e.key !== 'Enter') return;
+                if (e.isComposing || e.keyCode === 229) return;
+                e.preventDefault();
+                sendChat();
             });
 
             window.__tfCreateHomeCard = createHomeCardElement;
@@ -3791,22 +5152,104 @@
                     return k.indexOf('vol-user-') === 0;
                 }).map(function (k) {
                     return state.vols[k];
+                }).filter(function (v) {
+                    return v && isOwnVol(v);
                 });
                 saveUserVols(list);
             };
 
+            var accountProfileEditBtn = document.getElementById('accountProfileEditBtn');
+            if (accountProfileEditBtn) {
+                accountProfileEditBtn.addEventListener('click', function () {
+                    navigateTo('accountProfileEdit');
+                });
+            }
+            var profileSaveBtn = document.getElementById('profileSaveBtn');
+            if (profileSaveBtn) profileSaveBtn.addEventListener('click', saveProfileFromForm);
+            var profilePhotoIn = document.getElementById('profileEditPhoto');
+            if (profilePhotoIn) {
+                profilePhotoIn.addEventListener('change', function () {
+                    var f = profilePhotoIn.files && profilePhotoIn.files[0];
+                    if (!f) return;
+                    fileToResizedJpegDataURL(f, 320, 0.82, function (err, url) {
+                        profilePhotoIn.value = '';
+                        if (err || !url) {
+                            showToast('画像を読み込めませんでした');
+                            return;
+                        }
+                        state.profile.photoDataUrl = url;
+                        applyProfileToAccountDom();
+                        renderProfilePhotoPreview();
+                        savePersistedProfile();
+                        showToast('プロフィール画像を更新しました');
+                    });
+                });
+            }
+            var profilePhotoClr = document.getElementById('profileEditPhotoClear');
+            if (profilePhotoClr) profilePhotoClr.addEventListener('click', function () {
+                state.profile.photoDataUrl = '';
+                applyProfileToAccountDom();
+                renderProfilePhotoPreview();
+                savePersistedProfile();
+                showToast('プロフィール画像を削除しました');
+            });
+
+            var accountPhoneLoginBtn = document.getElementById('accountPhoneLoginBtn');
+            if (accountPhoneLoginBtn) accountPhoneLoginBtn.addEventListener('click', openPhoneAuthModal);
+            var phoneAuthSendBtn = document.getElementById('phoneAuthSendBtn');
+            if (phoneAuthSendBtn) phoneAuthSendBtn.addEventListener('click', phoneAuthSendCode);
+            var phoneAuthVerifyBtn = document.getElementById('phoneAuthVerifyBtn');
+            if (phoneAuthVerifyBtn) phoneAuthVerifyBtn.addEventListener('click', phoneAuthVerifySubmit);
+            var phoneAuthCancelBtn = document.getElementById('phoneAuthCancelBtn');
+            if (phoneAuthCancelBtn) phoneAuthCancelBtn.addEventListener('click', closePhoneAuthModal);
+            var phoneAuthModal = document.getElementById('phoneAuthModal');
+            if (phoneAuthModal) {
+                phoneAuthModal.addEventListener('click', function (e) {
+                    if (e.target === phoneAuthModal) closePhoneAuthModal();
+                });
+            }
+
             // Initial render
             renderAccount();
             renderSearchResults();
+            updateHomeEmptyState();
             renderDmThreads();
             renderNotifications();
             setUnreadFlag();
             updateNotifBadge();
 
             if (liveSyncEnabled()) {
-                window.setTimeout(liveSyncPullOnce, 300);
-                window.setInterval(liveSyncPullOnce, 2800);
+                var doPurge = false;
+                try {
+                    doPurge = new URLSearchParams(window.location.search).get('purgeServerVols') === '1';
+                } catch (_) {}
+                if (doPurge) {
+                    var pb = getLiveSyncBase();
+                    fetch(pb + '/api/dev/clear-user-vols', { method: 'POST' })
+                        .then(function (r) { return r.json().catch(function () { return null; }); })
+                        .then(function (j) {
+                            try {
+                                var u = new URL(window.location.href);
+                                u.searchParams.delete('purgeServerVols');
+                                window.history.replaceState({}, '', u.pathname + u.search + u.hash);
+                            } catch (_) {}
+                            if (j && j.ok) {
+                                showToast('サーバー上のユーザ募集を' + String(j.removed || 0) + '件削除しました');
+                            } else {
+                                showToast('サーバーから募集を消せませんでした（127.0.0.1 で同期サーバーを開いているか確認）');
+                            }
+                            liveSyncPullOnce();
+                        })
+                        .catch(function () {
+                            showToast('同期サーバーに接続できませんでした');
+                        });
+                    window.setInterval(liveSyncPullOnce, 2800);
+                } else {
+                    window.setTimeout(liveSyncPullOnce, 300);
+                    window.setInterval(liveSyncPullOnce, 2800);
+                }
             }
+            });
         })();
 </script>
 </body>
