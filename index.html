@@ -2811,7 +2811,10 @@
 
         function applyUserDefaultDocToState(data) {
             if (!data || typeof data !== 'object') return;
-            if (typeof data.name === 'string') state.profile.name = data.name.trim().slice(0, 80);
+            var displayName = '';
+            if (typeof data.name === 'string' && data.name.trim()) displayName = data.name.trim();
+            else if (typeof data.displayName === 'string' && data.displayName.trim()) displayName = data.displayName.trim();
+            if (displayName) state.profile.name = displayName.slice(0, 80);
             if (typeof data.avatar === 'string' && data.avatar.trim()) state.profile.avatar = data.avatar.trim().slice(0, 8);
             if (typeof data.bio === 'string') state.profile.bio = data.bio.slice(0, 500);
             if (typeof data.thanksCount === 'number' && isFinite(data.thanksCount) && data.thanksCount >= 0) {
@@ -2819,6 +2822,7 @@
             }
             var pic = '';
             if (typeof data.photoStorageUrl === 'string' && data.photoStorageUrl.trim()) pic = data.photoStorageUrl.trim();
+            else if (typeof data.photoURL === 'string' && data.photoURL.trim()) pic = data.photoURL.trim();
             else if (typeof data.photoDataUrl === 'string' && data.photoDataUrl.trim()) pic = data.photoDataUrl.trim();
             if (pic) state.profile.photoDataUrl = pic;
             if (data.dismissedNotifs && typeof data.dismissedNotifs === 'object') {
@@ -2832,6 +2836,21 @@
             if (typeof refreshAllHomeCardIcons === 'function') refreshAllHomeCardIcons();
             renderAccount();
             renderSearchResults();
+        }
+
+        function reloadUserProfileFromFirestore() {
+            var TF = tf();
+            var userDocRef = getCurrentUserDocRef();
+            if (!TF || !userDocRef) return Promise.resolve(false);
+            return TF.getDoc(userDocRef)
+                .then(function (snap) {
+                    if (snap.exists) {
+                        applyUserDefaultDocToState(snap.data());
+                        return true;
+                    }
+                    return false;
+                })
+                .catch(function () { return false; });
         }
 
         function attachUserDefaultFirestoreListener() {
@@ -2994,6 +3013,7 @@
             var photoStorageUrl = url.indexOf('http') === 0 ? url : '';
             var payload = {
                 name: state.profile.name || '',
+                displayName: state.profile.name || '',
                 avatar: state.profile.avatar || '🙂',
                 bio: state.profile.bio || '',
                 thanksCount:
@@ -3001,6 +3021,7 @@
                         ? Math.max(0, Math.floor(state.profile.thanksCount))
                         : 10,
                 photoStorageUrl: photoStorageUrl,
+                photoURL: photoStorageUrl,
                 updatedAt: TF.serverTimestamp()
             };
             if (state.dismissedNotifsRemote && typeof state.dismissedNotifsRemote === 'object') {
@@ -4614,6 +4635,7 @@
             if (id === 'account') {
                 var accountNav = document.querySelector('.bottom-nav .nav-item[data-section="account"]');
                 if (accountNav) accountNav.classList.add('active');
+                reloadUserProfileFromFirestore();
                 renderAccount();
             }
             if (id === 'accountProfileEdit') {
@@ -5896,7 +5918,10 @@
                     applyProfileToAccountDom();
                 }
                 setAuthGateVisible(false, '');
-                hydrateAndStartForCurrentUser();
+                reloadUserProfileFromFirestore()
+                    .then(function () {
+                        hydrateAndStartForCurrentUser();
+                    });
             });
         }
 
