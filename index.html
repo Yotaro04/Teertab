@@ -2959,13 +2959,12 @@
             var uid = getMyUserId();
             if (!TF || !v || !v.id || !uid || !TF.postDocRef) return;
             var payload = Object.assign({}, v);
+            var latestName = getLatestProfileDisplayName();
             payload.authorId = uid;
-            payload.authorName = String(
-                payload.authorName || state.profile.name || state.auth.displayName || ''
-            ).trim().slice(0, 80) || 'ユーザーネーム';
+            payload.authorName = latestName;
             payload.authorPhotoUrl = String(state.profile.photoDataUrl || payload.authorPhotoUrl || '').trim();
             payload.hostedByUserId = uid;
-            if (!payload.chatWith) payload.chatWith = payload.authorName;
+            payload.chatWith = latestName;
             payload.updatedAt = TF.serverTimestamp();
             TF.setDoc(TF.postDocRef(v.id), payload, { merge: true }).catch(function () {});
         }
@@ -3012,14 +3011,29 @@
             });
         }
 
+        function getLatestProfileDisplayName() {
+            var byState = String((state.profile && state.profile.name) || '').trim();
+            if (byState) return byState.slice(0, 80);
+            var byDom = '';
+            try {
+                var el = document.getElementById('accountDisplayName');
+                byDom = String((el && el.textContent) || '').trim();
+            } catch (_) {}
+            if (byDom) return byDom.slice(0, 80);
+            var byAuth = String((state.auth && state.auth.displayName) || '').trim();
+            if (byAuth) return byAuth.slice(0, 80);
+            return 'ユーザーネーム';
+        }
+
         function syncMyPostAuthorProfileFields() {
+            var latestName = getLatestProfileDisplayName();
             var mine = (state.userDefaultHostedVols || []).filter(function (v) {
                 return v && typeof v.id === 'string';
             });
             mine.forEach(function (v) {
                 var patch = Object.assign({}, v, {
                     authorId: getMyUserId() || '',
-                    authorName: String(state.profile.name || state.auth.displayName || '').trim().slice(0, 80) || 'ユーザーネーム',
+                    authorName: latestName,
                     authorPhotoUrl: String(state.profile.photoDataUrl || '').trim()
                 });
                 upsertPostDocument(patch);
@@ -6195,6 +6209,7 @@
                 requestForm.addEventListener('submit', function (e) {
                     e.preventDefault();
                     var me = getCurrentUserProfile();
+                    var latestName = getLatestProfileDisplayName();
 
                     var titleInput = document.getElementById('req-title');
                     var whenInput = document.getElementById('req-when');
@@ -6222,7 +6237,7 @@
                     var v = {
                         id: id,
                         authorId: posterUid || '',
-                        authorName: me.name || 'ユーザーネーム',
+                        authorName: latestName,
                         authorPhotoUrl: String(state.profile.photoDataUrl || '').trim(),
                         hostedByLocal: deviceOwnerKey,
                         thumb: me.avatar,
@@ -6236,7 +6251,7 @@
                         near: !/オンライン/.test(place),
                         thisWeek: true,
                         remote: /オンライン/.test(place),
-                        chatWith: me.name || 'ユーザーネーム',
+                        chatWith: latestName,
                         capacity: Math.max(1, people),
                         joined: 0,
                         durationText: '相談',
