@@ -634,6 +634,8 @@
             min-height: 0;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
+            position: relative;
+            z-index: 2;
         }
         #request.content-section.active,
         #account.content-section.active,
@@ -1555,6 +1557,9 @@
             cursor: pointer;
             touch-action: manipulation;
             border: none;
+            pointer-events: auto;
+            position: relative;
+            z-index: 3;
         }
         .card.card-clickable:active {
             background: #202020;
@@ -5034,34 +5039,49 @@
             syncDetailActionBars();
         }
 
+        function openDetailFromCardElement(cardEl) {
+            if (!cardEl) return;
+            var id = cardEl.getAttribute('data-id') || cardEl.getAttribute('data-open-detail') || '';
+            if (!id) return;
+            console.log('Card clicked!', id);
+            openDetail(id);
+        }
+
         function setupCardEventDelegation() {
+            function handleCardActivationFromEvent(e, container) {
+                var organizerBtn = e.target && e.target.closest ? e.target.closest('[data-open-organizer]') : null;
+                if (organizerBtn) {
+                    e.stopPropagation();
+                    var who = organizerBtn.getAttribute('data-open-organizer') || '';
+                    if (!who) return true;
+                    var uid = organizerBtn.getAttribute('data-organizer-user-id') || '';
+                    console.log('Organizer clicked!', uid || who);
+                    openOrganizerProfile(who, uid);
+                    return true;
+                }
+                var accBtn = e.target && e.target.closest ? e.target.closest('[data-open-account]') : null;
+                if (accBtn) {
+                    e.stopPropagation();
+                    var accNav = document.querySelector('.bottom-nav .nav-item[data-section="account"]');
+                    console.log('Account icon clicked');
+                    showSection('account', accNav);
+                    return true;
+                }
+                var card = e.target && e.target.closest ? e.target.closest('[data-open-detail]') : null;
+                if (!card) return false;
+                if (container && !container.contains(card)) return false;
+                if (!(card.getAttribute('data-id') || card.getAttribute('data-open-detail') || '')) return false;
+                openDetailFromCardElement(card);
+                return true;
+            }
+
             function bindContainer(containerId) {
                 var container = document.getElementById(containerId);
                 if (!container || container.dataset.cardDelegationBound === '1') return;
                 container.dataset.cardDelegationBound = '1';
 
                 container.addEventListener('click', function (e) {
-                    var organizerBtn = e.target && e.target.closest ? e.target.closest('[data-open-organizer]') : null;
-                    if (organizerBtn) {
-                        e.stopPropagation();
-                        var who = organizerBtn.getAttribute('data-open-organizer') || '';
-                        if (!who) return;
-                        var uid = organizerBtn.getAttribute('data-organizer-user-id') || '';
-                        openOrganizerProfile(who, uid);
-                        return;
-                    }
-                    var accBtn = e.target && e.target.closest ? e.target.closest('[data-open-account]') : null;
-                    if (accBtn) {
-                        e.stopPropagation();
-                        var accNav = document.querySelector('.bottom-nav .nav-item[data-section="account"]');
-                        showSection('account', accNav);
-                        return;
-                    }
-                    var card = e.target && e.target.closest ? e.target.closest('[data-open-detail]') : null;
-                    if (!card || !container.contains(card)) return;
-                    var id = card.getAttribute('data-id') || card.getAttribute('data-open-detail') || '';
-                    if (!id) return;
-                    openDetail(id);
+                    handleCardActivationFromEvent(e, container);
                 });
 
                 container.addEventListener('keydown', function (e) {
@@ -5069,14 +5089,24 @@
                     var card = e.target && e.target.closest ? e.target.closest('[data-open-detail]') : null;
                     if (!card || !container.contains(card)) return;
                     e.preventDefault();
-                    var id = card.getAttribute('data-id') || card.getAttribute('data-open-detail') || '';
-                    if (!id) return;
-                    openDetail(id);
+                    handleCardActivationFromEvent(e, container);
                 });
             }
 
             bindContainer('homeCards');
             bindContainer('searchResults');
+
+            // Fallback: 万一コンテナ差し替え等で委譲が外れても、document で最後に拾う
+            if (document.body && document.body.dataset.cardDelegationFallbackBound !== '1') {
+                document.body.dataset.cardDelegationFallbackBound = '1';
+                document.addEventListener('click', function (e) {
+                    var consumed = handleCardActivationFromEvent(e, null);
+                    if (consumed) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                    }
+                }, true);
+            }
         }
 
         function openChat(withName, peerUserId) {
@@ -5164,6 +5194,14 @@
                 card.setAttribute('role', 'button');
                 card.setAttribute('tabindex', '0');
                 card.innerHTML = reqCardHTML(v);
+                card.addEventListener('click', function () {
+                    openDetailFromCardElement(card);
+                });
+                card.addEventListener('keydown', function (e) {
+                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                    e.preventDefault();
+                    openDetailFromCardElement(card);
+                });
                 wrap.appendChild(card);
             });
         }
@@ -5932,6 +5970,14 @@
                         '</div>' +
                     '</div>' +
                     mediaHtml;
+                card.addEventListener('click', function () {
+                    openDetailFromCardElement(card);
+                });
+                card.addEventListener('keydown', function (e) {
+                    if (e.key !== 'Enter' && e.key !== ' ') return;
+                    e.preventDefault();
+                    openDetailFromCardElement(card);
+                });
                 var icon = card.querySelector('.req-icon');
                 if (icon) {
                     var goAccount = function () {
