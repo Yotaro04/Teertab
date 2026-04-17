@@ -2922,6 +2922,7 @@
             payload.authorName = String(
                 payload.authorName || state.profile.name || state.auth.displayName || ''
             ).trim().slice(0, 80) || 'ユーザーネーム';
+            payload.authorPhotoUrl = String(state.profile.photoDataUrl || payload.authorPhotoUrl || '').trim();
             payload.hostedByUserId = uid;
             if (!payload.chatWith) payload.chatWith = payload.authorName;
             payload.updatedAt = TF.serverTimestamp();
@@ -2941,6 +2942,7 @@
                     var payload = Object.assign({}, v);
                     payload.authorId = uid;
                     payload.authorName = name;
+                    payload.authorPhotoUrl = String(state.profile.photoDataUrl || payload.authorPhotoUrl || '').trim();
                     payload.hostedByUserId = uid;
                     if (!payload.chatWith) payload.chatWith = name;
                     payload.updatedAt = TF.serverTimestamp();
@@ -2969,11 +2971,25 @@
             });
         }
 
+        function syncMyPostAuthorProfileFields() {
+            var mine = (state.userDefaultHostedVols || []).filter(function (v) {
+                return v && typeof v.id === 'string';
+            });
+            mine.forEach(function (v) {
+                var patch = Object.assign({}, v, {
+                    authorId: getMyUserId() || '',
+                    authorName: String(state.profile.name || state.auth.displayName || '').trim().slice(0, 80) || 'ユーザーネーム',
+                    authorPhotoUrl: String(state.profile.photoDataUrl || '').trim()
+                });
+                upsertPostDocument(patch);
+            });
+        }
+
         function flushUserDefaultDoc() {
             var TF = tf();
             if (!TF) return;
             var userDocRef = getCurrentUserDocRef();
-            if (!userDocRef) return;
+            if (!userDocRef) return Promise.resolve(false);
             var url = String(state.profile.photoDataUrl || '').trim();
             var photoStorageUrl = url.indexOf('http') === 0 ? url : '';
             var payload = {
@@ -2990,7 +3006,9 @@
             if (state.dismissedNotifsRemote && typeof state.dismissedNotifsRemote === 'object') {
                 payload.dismissedNotifs = state.dismissedNotifsRemote;
             }
-            TF.setDoc(userDocRef, payload, { merge: true }).catch(function () {});
+            return TF.setDoc(userDocRef, payload, { merge: true })
+                .then(function () { return true; })
+                .catch(function () { return false; });
         }
 
         function savePersistedProfile() {
@@ -3001,10 +3019,10 @@
                 teertabUploadDataUrlToStorage('users/' + getMyUserId() + '/profile.jpg', url)
                     .then(function (got) {
                         state.profile.photoDataUrl = got;
-                        flushUserDefaultDoc();
+                        return flushUserDefaultDoc();
                     })
                     .catch(function () {
-                        flushUserDefaultDoc();
+                        return flushUserDefaultDoc();
                     });
                 return;
             }
@@ -3265,6 +3283,8 @@
             state.profile.bio = b ? String(b.value || '').trim().slice(0, 500) : '';
             applyProfileToAccountDom();
             savePersistedProfile();
+            flushUserDefaultDoc();
+            syncMyPostAuthorProfileFields();
             syncAuthStorageDisplayNameFromProfile();
             populateProfileEditForm();
             renderAccount();
@@ -5060,6 +5080,7 @@
             if (orgIcon) {
                 var pub = publicProfileForUidOrName(d.hostedByUserId || '', d.chatWith || '');
                 var syncedPhoto = publicProfilePhotoUrl(pub);
+                if (!syncedPhoto && d.authorPhotoUrl) syncedPhoto = String(d.authorPhotoUrl || '').trim();
                 if (syncedPhoto) {
                     orgIcon.classList.add('detail-organizer-ic--photo');
                     orgIcon.style.backgroundImage = 'url(' + JSON.stringify(syncedPhoto) + ')';
@@ -5870,6 +5891,10 @@
                 state.auth.secret = '';
                 state.auth.displayName = user.displayName || '';
                 state.auth.phoneE164 = '';
+                if (!state.profile.name && user.displayName) {
+                    state.profile.name = String(user.displayName).trim().slice(0, 80);
+                    applyProfileToAccountDom();
+                }
                 setAuthGateVisible(false, '');
                 hydrateAndStartForCurrentUser();
             });
@@ -5993,6 +6018,7 @@
                 var photo = '';
                 if (own) photo = String(state.profile.photoDataUrl || '');
                 if (!photo && v && v.hostedByUserId) photo = syncedPhotoForUserId(v.hostedByUserId);
+                if (!photo && v && v.authorPhotoUrl) photo = String(v.authorPhotoUrl || '').trim();
                 if (!photo && v && v.chatWith) {
                     var uidByName = userIdForDisplayName(v.chatWith);
                     if (uidByName) photo = syncedPhotoForUserId(uidByName);
@@ -6155,6 +6181,7 @@
                         id: id,
                         authorId: posterUid || '',
                         authorName: me.name || 'ユーザーネーム',
+                        authorPhotoUrl: String(state.profile.photoDataUrl || '').trim(),
                         hostedByLocal: deviceOwnerKey,
                         thumb: me.avatar,
                         tag: 'New',
