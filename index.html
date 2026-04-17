@@ -2546,6 +2546,7 @@
         var teertabUserCardsUnsub = null;
         var userDefaultSaveTimer = null;
         var currentUserDocRef = null;
+        var accountViewRefreshSeq = 0;
         var teertabMainBooted = false;
         var firebaseAuthUnsub = null;
 
@@ -2851,6 +2852,18 @@
                     return false;
                 })
                 .catch(function () { return false; });
+        }
+
+        function refreshAccountViewFromFirestore() {
+            var seq = ++accountViewRefreshSeq;
+            return reloadUserProfileFromFirestore().then(function () {
+                if (seq !== accountViewRefreshSeq) return false;
+                // Firestore を正として、取得完了後に描画する
+                applyProfileToAccountDom();
+                renderAccount();
+                populateProfileEditForm();
+                return true;
+            });
         }
 
         function attachUserDefaultFirestoreListener() {
@@ -3304,7 +3317,9 @@
             state.profile.bio = b ? String(b.value || '').trim().slice(0, 500) : '';
             applyProfileToAccountDom();
             savePersistedProfile();
-            flushUserDefaultDoc();
+            flushUserDefaultDoc().then(function () {
+                refreshAccountViewFromFirestore();
+            });
             syncMyPostAuthorProfileFields();
             syncAuthStorageDisplayNameFromProfile();
             populateProfileEditForm();
@@ -4635,8 +4650,7 @@
             if (id === 'account') {
                 var accountNav = document.querySelector('.bottom-nav .nav-item[data-section="account"]');
                 if (accountNav) accountNav.classList.add('active');
-                reloadUserProfileFromFirestore();
-                renderAccount();
+                refreshAccountViewFromFirestore();
             }
             if (id === 'accountProfileEdit') {
                 populateProfileEditForm();
@@ -5913,10 +5927,6 @@
                 state.auth.secret = '';
                 state.auth.displayName = user.displayName || '';
                 state.auth.phoneE164 = '';
-                if (!state.profile.name && user.displayName) {
-                    state.profile.name = String(user.displayName).trim().slice(0, 80);
-                    applyProfileToAccountDom();
-                }
                 setAuthGateVisible(false, '');
                 reloadUserProfileFromFirestore()
                     .then(function () {
