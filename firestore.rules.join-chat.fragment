@@ -30,7 +30,7 @@
       allow create: if request.auth != null
         && request.resource.data.applicantId == request.auth.uid
         && request.resource.data.keys().hasOnly([
-          'recipientId', 'ownerId', 'applicantId', 'applicationId', 'type', 'joinStatus',
+          'recipientId', 'ownerId', 'applicantId', 'applicationId', 'type', 'joinStatus', 'viewedJoinState',
           'volTitle', 'volId', 'postId', 'organizerUserId', 'applicantUserId',
           'organizerName', 'applicantName', 'createdAt'
         ])
@@ -40,6 +40,8 @@
         && request.resource.data.applicationId is string
         && request.resource.data.type == 'join_request'
         && request.resource.data.joinStatus == 'pending'
+        && request.resource.data.viewedJoinState is bool
+        && request.resource.data.viewedJoinState == false
         && request.resource.data.postId is string
         && request.resource.data.volId is string
         && request.resource.data.organizerUserId is string
@@ -47,7 +49,12 @@
       allow update: if request.auth != null
         && (resource.data.recipientId == request.auth.uid
             || resource.data.ownerId == request.auth.uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joinStatus', 'viewedJoinState']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joinStatus', 'viewedJoinState'])
+        && (!('joinStatus' in request.resource.data.diff(resource.data).affectedKeys())
+            || (request.resource.data.joinStatus is string
+                && request.resource.data.joinStatus in ['pending', 'approved', 'rejected']))
+        && (!('viewedJoinState' in request.resource.data.diff(resource.data).affectedKeys())
+            || request.resource.data.viewedJoinState is bool);
       allow delete: if request.auth != null
         && resource.data.recipientId == request.auth.uid;
     }

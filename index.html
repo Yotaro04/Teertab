@@ -2604,6 +2604,8 @@
         var teertabUserDocUnsub = null;
         var teertabUserCardsUnsub = null;
         var teertabFsNotificationsUnsub = null;
+        /** 参加通知バッジ専用: viewedJoinState==false のみ（DM の unseen は chats を参照） */
+        var teertabFsNotificationsUnreadUnsub = null;
         var teertabFsApplicationsOwnerUnsub = null;
         var teertabFsApplicationsApplicantUnsub = null;
         var teertabFsChatsUnsub = null;
@@ -2789,6 +2791,8 @@
             _bundleNotificationsRaw: [],
             _fsNotificationRows: [],
             _fsPendingOwnerApplicationCount: 0,
+            /** Firestore 参加通知: where(viewedJoinState==false) の件数（DM とは別系統） */
+            _fsJoinNotifUnreadFromQuery: 0,
             /** Firestore DM: chats.unseenCountByUser 由来のヘッダー未読ドット */
             _fsHasDmUnread: false,
             userDefaultHydrated: false,
@@ -4183,17 +4187,26 @@
         function fsNotificationDocToUi(docSnap) {
             var data = docSnap.data() || {};
             var ms = fsTimestampToMs(data.createdAt) || Date.now();
-            var rawJoin = data.joinStatus != null ? String(data.joinStatus) : 'pending';
-            var effectiveJoin = rawJoin;
-            if (rawJoin === 'read' && data.viewedJoinState != null) {
+            var joinStatusRaw = data.joinStatus != null ? String(data.joinStatus) : 'pending';
+            var legacyListRead = joinStatusRaw === 'read';
+            var effectiveJoin = joinStatusRaw;
+            if (legacyListRead && typeof data.viewedJoinState === 'string') {
                 effectiveJoin = String(data.viewedJoinState);
             }
+            if (effectiveJoin !== 'pending' && effectiveJoin !== 'approved' && effectiveJoin !== 'rejected') {
+                effectiveJoin = 'pending';
+            }
+            var viewedExplicitTrue = data.viewedJoinState === true;
+            var joinNotifUnread = !viewedExplicitTrue && !legacyListRead;
+            var viewedJoinStateUnset = data.viewedJoinState === undefined || data.viewedJoinState === null;
             return {
                 id: docSnap.id,
                 applicationId: String(data.applicationId || '').trim(),
                 type: data.type || 'join_request',
                 joinStatus: effectiveJoin,
-                _rawJoinStatus: rawJoin,
+                _rawJoinStatus: joinStatusRaw,
+                _joinNotifUnread: joinNotifUnread,
+                _viewedJoinStateUnset: viewedJoinStateUnset,
                 recipientId: String(data.recipientId || '').trim(),
                 at: formatRelativeNotifShort(ms),
                 _sortAt: ms,
@@ -4239,7 +4252,6 @@
             return (state.notifications || []).filter(function (n) {
                 if (!n || n.type !== 'join_request') return false;
                 if (isNotificationDismissedFromList(n.id)) return false;
-                if (n._rawJoinStatus === 'read') return false;
                 var st = n.joinStatus != null ? n.joinStatus : 'pending';
                 if (st !== 'pending') return false;
                 if (n.organizerUserId && uid) return n.organizerUserId === uid;
@@ -4273,6 +4285,8 @@
         }
 
         function detachFirestoreJoinFlowListeners() {
+            if (typeof teertabFsNotificationsUnreadUnsub === 'function') teertabFsNotificationsUnreadUnsub();
+            teertabFsNotificationsUnreadUnsub = null;
             if (typeof teertabFsNotificationsUnsub === 'function') teertabFsNotificationsUnsub();
             teertabFsNotificationsUnsub = null;
             if (typeof teertabFsApplicationsOwnerUnsub === 'function') teertabFsApplicationsOwnerUnsub();
@@ -4284,6 +4298,7 @@
             detachFirestoreChatMessagesListener();
             state._fsNotificationRows = [];
             state._fsPendingOwnerApplicationCount = 0;
+            state._fsJoinNotifUnreadFromQuery = 0;
             state._fsHasDmUnread = false;
             setUnreadFlag();
         }
@@ -4295,6 +4310,21 @@
             });
             state._fsNotificationRows = rows;
             mergeNotificationsIntoState();
+        }
+
+        function rebuildFsUnreadJoinNotificationsFromQuerySnapshot(snap) {
+            state._fsJoinNotifUnreadFromQuery = snap.size;
+            try {
+                console.log(
+                    '[Teertab] 参加通知未読 onSnapshot where(viewedJoinState==false):',
+                    snap.size,
+                    snap.docs.map(function (d) {
+                        return d.id;
+                    })
+                );
+            } catch (_) {}
+            updateNotifBadge();
+            syncAccountTabNotifDot();
         }
 
         function findThreadByFirestoreChatId(cid) {
@@ -4367,6 +4397,23 @@
                 });
             } catch (err) {
                 console.warn('Teertab notifications query', err);
+            }
+            try {
+                var nqUnread = TF.query(
+                    TF.notificationsColRef(),
+                    TF.where('recipientId', '==', uid),
+                    TF.where('viewedJoinState', '==', false),
+                    TF.limit(80)
+                );
+                teertabFsNotificationsUnreadUnsub = TF.onSnapshot(
+                    nqUnread,
+                    rebuildFsUnreadJoinNotificationsFromQuerySnapshot,
+                    function (e) {
+                        console.warn('Teertab notifications unread listener', e);
+                    }
+                );
+            } catch (errUnread) {
+                console.warn('Teertab notifications unread query', errUnread);
             }
             try {
                 var qOwn = TF.query(TF.applicationsColRef(), TF.where('ownerId', '==', uid), TF.limit(60));
@@ -4492,9 +4539,9 @@
             });
         }
 
-        /** 通知一覧を開いたとき: 自分宛の Firestore 参加通知を既読（バッジ用 joinStatus=read、UI用 viewedJoinState） */
+        /** 通知一覧を開いたとき: 自分宛の参加通知を viewedJoinState:true（joinStatus は承認状態のまま） */
         function markFirestoreJoinNotificationsSeenWhenOpeningList() {
-            console.log('バッジ消去処理を実行: ', 'notifications');
+            console.log('[Teertab] 通知一覧既読バッチ開始: notifications → updateDoc viewedJoinState:true');
             var TF = tf();
             var myUid = String(getMyUserId() || '').trim();
             if (!TF || !useFirestoreJoinFlow() || !myUid || !TF.updateDoc) return Promise.resolve();
@@ -4502,24 +4549,26 @@
             (state.notifications || []).forEach(function (n) {
                 if (!n || !n._firestoreNotification || n.type !== 'join_request') return;
                 if (n.recipientId && n.recipientId !== myUid) return;
-                if (n._rawJoinStatus === 'read') return;
-                var prevSt = n.joinStatus != null ? String(n.joinStatus) : 'pending';
+                if (!n._joinNotifUnread) return;
+                var ref = TF.notificationDocRef(n.id);
                 tasks.push(
-                    TF.updateDoc(TF.notificationDocRef(n.id), {
-                        joinStatus: 'read',
-                        viewedJoinState: prevSt
+                    TF.updateDoc(ref, { viewedJoinState: true }).then(function () {
+                        console.log('[Teertab] updateDoc viewedJoinState:true OK (一覧)', n.id);
                     })
                 );
             });
-            if (!tasks.length) return Promise.resolve();
+            if (!tasks.length) {
+                console.log('[Teertab] 通知一覧既読: 対象なし');
+                return Promise.resolve();
+            }
             return Promise.all(tasks).catch(function (e) {
                 console.warn('Teertab markFirestoreJoinNotificationsSeenWhenOpeningList', e);
             });
         }
 
-        /** チャットルーム表示時: 当該 applicationId の参加通知を自分分既読 */
+        /** チャットルーム表示時: 当該 applicationId の参加通知を自分宛のみ既読 */
         function markFirestoreJoinNotificationsSeenForChatRoom(chatRoomId) {
-            console.log('バッジ消去処理を実行: ', chatRoomId);
+            console.log('[Teertab] チャット連動既読開始:', chatRoomId, '→ updateDoc viewedJoinState:true');
             var TF = tf();
             var myUid = String(getMyUserId() || '').trim();
             var cid = String(chatRoomId || '').trim();
@@ -4529,19 +4578,37 @@
                 if (!n || !n._firestoreNotification || n.type !== 'join_request') return;
                 if (String(n.applicationId || '') !== cid) return;
                 if (n.recipientId && n.recipientId !== myUid) return;
-                if (n._rawJoinStatus === 'read') return;
-                var prevSt = n.joinStatus != null ? String(n.joinStatus) : 'pending';
+                if (!n._joinNotifUnread) return;
+                var ref = TF.notificationDocRef(n.id);
                 tasks.push(
-                    TF.updateDoc(TF.notificationDocRef(n.id), {
-                        joinStatus: 'read',
-                        viewedJoinState: prevSt
+                    TF.updateDoc(ref, { viewedJoinState: true }).then(function () {
+                        console.log('[Teertab] updateDoc viewedJoinState:true OK (チャット)', n.id);
                     })
                 );
             });
-            if (!tasks.length) return Promise.resolve();
+            if (!tasks.length) {
+                console.log('[Teertab] チャット連動既読: 対象なし', cid);
+                return Promise.resolve();
+            }
             return Promise.all(tasks).catch(function (e) {
                 console.warn('Teertab markFirestoreJoinNotificationsSeenForChatRoom', e);
             });
+        }
+
+        /** 1件タップ等: 参加通知ドキュメントのみ既読（DM の unseen は触らない） */
+        function markFirestoreSingleJoinNotificationSeen(notifId) {
+            var id = String(notifId || '').trim();
+            console.log('[Teertab] 参加通知1件既読 markFirestoreSingleJoinNotificationSeen:', id);
+            var TF = tf();
+            var myUid = String(getMyUserId() || '').trim();
+            if (!TF || !useFirestoreJoinFlow() || !myUid || !id || !TF.updateDoc) return Promise.resolve();
+            return TF.updateDoc(TF.notificationDocRef(id), { viewedJoinState: true })
+                .then(function () {
+                    console.log('[Teertab] updateDoc viewedJoinState:true OK (単体)', id);
+                })
+                .catch(function (e) {
+                    console.warn('[Teertab] markFirestoreSingleJoinNotificationSeen failed', id, e);
+                });
         }
 
         function submitJoinApplicationFirestore(vol, done) {
@@ -4587,6 +4654,7 @@
                     applicationId: appId,
                     type: 'join_request',
                     joinStatus: 'pending',
+                    viewedJoinState: false,
                     volTitle: volTitle,
                     volId: postId,
                     postId: postId,
@@ -4661,11 +4729,11 @@
                     );
                     batch.update(TF.notificationDocRef(applicationId + '__owner'), {
                         joinStatus: 'approved',
-                        viewedJoinState: 'approved'
+                        viewedJoinState: true
                     });
                     batch.update(TF.notificationDocRef(applicationId + '__applicant'), {
                         joinStatus: 'approved',
-                        viewedJoinState: 'approved'
+                        viewedJoinState: false
                     });
                     return batch.commit();
                 })
@@ -5370,10 +5438,25 @@
 
         function hasVisibleNotificationsForMe() {
             var me = syncAccountNameFromDom();
+            /** 参加申請の未読は notifications.viewedJoinState のみ（DM は chats.unseenCountByUser → setUnreadFlag） */
+            if (useFirestoreJoinFlow()) {
+                var qn = Number(state._fsJoinNotifUnreadFromQuery) || 0;
+                if (qn > 0) return true;
+                var legacyUnreadNoField = (state.notifications || []).some(function (n) {
+                    return (
+                        n &&
+                        n._firestoreNotification &&
+                        n.type === 'join_request' &&
+                        n._joinNotifUnread &&
+                        n._viewedJoinStateUnset
+                    );
+                });
+                if (legacyUnreadNoField) return true;
+            }
             return (state.notifications || []).some(function (n) {
                 if (!n) return false;
                 if (isNotificationDismissedFromList(n.id)) return false;
-                if (n._firestoreNotification && n._rawJoinStatus === 'read') return false;
+                if (n._firestoreNotification && n.type === 'join_request') return false;
                 if (n.type === 'thanks_granted') {
                     if (n.applicantUserId && getMyUserId()) return n.applicantUserId === getMyUserId();
                     return accountsMatch(n.applicantName, me);
@@ -5594,10 +5677,18 @@
                 var isApplicant = n.type === 'join_request' && notifIsApplicant(n);
                 var row = document.createElement('div');
                 var joinSt = (n.type === 'join_request') ? (n.joinStatus != null ? n.joinStatus : 'pending') : 'none';
-                var rawListRead = n._rawJoinStatus === 'read';
-                var isPendingJoin =
-                    n.type === 'join_request' && joinSt === 'pending' && isHost && !rawListRead;
-                row.className = 'notif-row' + (isPendingJoin ? ' notif-row--unread' : '');
+                var joinRowUnread =
+                    n.type === 'join_request' &&
+                    n._joinNotifUnread &&
+                    (isHost || isApplicant);
+                row.className = 'notif-row' + (joinRowUnread ? ' notif-row--unread' : '');
+                if (n._firestoreNotification && n._joinNotifUnread && n.id) {
+                    row.classList.add('card-clickable');
+                    row.addEventListener('click', function (e) {
+                        if (e.target && e.target.closest && e.target.closest('button')) return;
+                        markFirestoreSingleJoinNotificationSeen(n.id);
+                    });
+                }
                 var top = document.createElement('div');
                 top.className = 'notif-row-top';
                 var ty = document.createElement('span');
