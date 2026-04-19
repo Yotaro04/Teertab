@@ -19,7 +19,8 @@ import {
     orderBy,
     limit,
     addDoc,
-    writeBatch
+    writeBatch,
+    increment
 } from 'firebase/firestore';
 import { ref, uploadString, getDownloadURL } from 'firebase/storage';
 import {
@@ -54,6 +55,7 @@ window.__TF = {
     limit,
     addDoc,
     writeBatch,
+    increment,
     bundleRef,
     userDocRef: (uid) => doc(db, 'users', String(uid || '')),
     /** 全ユーザー共通の募集カード */
