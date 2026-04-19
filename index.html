@@ -2789,6 +2789,8 @@
             _bundleNotificationsRaw: [],
             _fsNotificationRows: [],
             _fsPendingOwnerApplicationCount: 0,
+            /** Firestore DM: chats.unseenCountByUser 由来のヘッダー未読ドット */
+            _fsHasDmUnread: false,
             userDefaultHydrated: false,
             userDefaultHostedVols: [],
             dismissedNotifsRemote: {}
@@ -4275,6 +4277,8 @@
             detachFirestoreChatMessagesListener();
             state._fsNotificationRows = [];
             state._fsPendingOwnerApplicationCount = 0;
+            state._fsHasDmUnread = false;
+            setUnreadFlag();
         }
 
         function rebuildFsNotificationsFromQuerySnapshot(snap) {
@@ -4325,12 +4329,11 @@
                         });
                     });
                     if (th.messages.length) th.lastAt = '今';
-                    if (
-                        document.getElementById('chat') &&
-                        document.getElementById('chat').classList.contains('active') &&
-                        threadMatchesOpenChat(th)
-                    ) {
+                    var chatEl = document.getElementById('chat');
+                    var viewing = !!(chatEl && chatEl.classList.contains('active') && threadMatchesOpenChat(th));
+                    if (viewing) {
                         renderChat();
+                        clearFirestoreChatUnseenForMe(chatId);
                     }
                     setUnreadFlag();
                     renderDmThreads();
@@ -4393,22 +4396,7 @@
                 teertabFsChatsUnsub = TF.onSnapshot(
                     cq,
                     function (snap) {
-                        snap.forEach(function (d) {
-                            var data = d.data() || {};
-                            var ids = Array.isArray(data.participantIds) ? data.participantIds : [];
-                            var peerUid =
-                                ids.filter(function (x) {
-                                    return x && x !== uid;
-                                })[0] || '';
-                            var peerName = displayNameForUserId(peerUid) || 'DM';
-                            var th = ensureThread(peerName, peerUid);
-                            th.firestoreChatId = d.id;
-                            if (data.postId || data.volId) th.relatedVolId = String(data.postId || data.volId || '');
-                        });
-                        renderDmThreads();
-                        if (document.getElementById('chat') && document.getElementById('chat').classList.contains('active')) {
-                            renderChat();
-                        }
+                        applyFirestoreChatsSnapshotForDmUnread(snap, uid);
                     },
                     function (e) {
                         console.warn('Teertab chats listener', e);
@@ -4417,6 +4405,76 @@
             } catch (err4) {
                 console.warn('Teertab chats query', err4);
             }
+        }
+
+        /** chats コレクションの onSnapshot: 未読カウンタとスレッド一覧の ● を同期（リロード不要） */
+        function applyFirestoreChatsSnapshotForDmUnread(snap, myUid) {
+            myUid = String(myUid || '').trim();
+            if (!myUid) {
+                state._fsHasDmUnread = false;
+                setUnreadFlag();
+                return;
+            }
+            var anyUnread = false;
+            snap.forEach(function (d) {
+                var data = d.data() || {};
+                var ids = Array.isArray(data.participantIds) ? data.participantIds : [];
+                var peerUid =
+                    ids.filter(function (x) {
+                        return x && x !== myUid;
+                    })[0] || '';
+                var peerName = displayNameForUserId(peerUid) || 'DM';
+                var th = ensureThread(peerName, peerUid);
+                th.firestoreChatId = d.id;
+                if (data.postId || data.volId) th.relatedVolId = String(data.postId || data.volId || '');
+                var rawUn = data.unseenCountByUser;
+                var cnt = rawUn && typeof rawUn === 'object' ? Number(rawUn[myUid]) || 0 : 0;
+                if (cnt > 0) anyUnread = true;
+                th.unread = cnt > 0;
+            });
+            state._fsHasDmUnread = anyUnread;
+            setUnreadFlag();
+            renderDmThreads();
+            if (document.getElementById('chat') && document.getElementById('chat').classList.contains('active')) {
+                renderChat();
+            }
+        }
+
+        function bumpFirestoreChatUnseenForPeer(chatId, recipientUserId) {
+            var TF = tf();
+            var rid = String(recipientUserId || '').trim();
+            var sid = String(getMyUserId() || '').trim();
+            if (!TF || !chatId || !rid || !sid || rid === sid) return Promise.resolve();
+            var ref = TF.chatDocRef(chatId);
+            return TF.runTransaction(TF.db, function (transaction) {
+                return transaction.get(ref).then(function (s) {
+                    if (!s.exists) return;
+                    var data = s.data() || {};
+                    var ids = Array.isArray(data.participantIds) ? data.participantIds : [];
+                    if (ids.indexOf(sid) === -1 || ids.indexOf(rid) === -1) return;
+                    var raw = data.unseenCountByUser;
+                    var u = raw && typeof raw === 'object' ? Object.assign({}, raw) : {};
+                    u[rid] = (Number(u[rid]) || 0) + 1;
+                    transaction.update(ref, {
+                        unseenCountByUser: u,
+                        lastMessageAt: TF.serverTimestamp()
+                    });
+                });
+            }).catch(function (e) {
+                console.warn('Teertab bumpFirestoreChatUnseenForPeer', e);
+            });
+        }
+
+        function clearFirestoreChatUnseenForMe(chatId) {
+            var TF = tf();
+            var myUid = String(getMyUserId() || '').trim();
+            if (!TF || !chatId || !myUid) return Promise.resolve();
+            var ref = TF.chatDocRef(chatId);
+            var patch = {};
+            patch['unseenCountByUser.' + myUid] = 0;
+            return TF.updateDoc(ref, patch).catch(function (e) {
+                console.warn('Teertab clearFirestoreChatUnseenForMe', e);
+            });
         }
 
         function submitJoinApplicationFirestore(vol, done) {
@@ -4517,6 +4575,9 @@
                     var batch = TF.writeBatch(TF.db);
                     var participantIds = [String(app.ownerId || ''), String(app.applicantId || '')].filter(Boolean).sort();
                     batch.update(TF.applicationDocRef(applicationId), { status: 'approved', approvedAt: TF.serverTimestamp() });
+                    var unseenInit = {};
+                    unseenInit[String(app.ownerId || '')] = 0;
+                    unseenInit[String(app.applicantId || '')] = 0;
                     batch.set(
                         TF.chatDocRef(applicationId),
                         {
@@ -4525,6 +4586,8 @@
                             ownerId: app.ownerId,
                             applicantId: app.applicantId,
                             participantIds: participantIds,
+                            unseenCountByUser: unseenInit,
+                            lastMessageAt: TF.serverTimestamp(),
                             createdAt: TF.serverTimestamp()
                         },
                         { merge: true }
@@ -4544,19 +4607,22 @@
                 });
         }
 
-        function firestoreAppendChatMessage(chatId, text) {
+        function firestoreAppendChatMessage(chatId, text, recipientUserId) {
             var TF = tf();
             var myUid = getMyUserId() || '';
             if (!TF || !chatId || !TF.addDoc || !TF.chatMessagesColRef) return Promise.reject(new Error('bad message'));
             var dev = getDeviceOwnerKey();
             var nm = syncAccountNameFromDom();
             var col = TF.chatMessagesColRef(chatId);
+            var peer = String(recipientUserId || '').trim();
             return TF.addDoc(col, {
                 senderId: myUid,
                 senderName: nm,
                 device: dev,
                 text: String(text || '').slice(0, 8000),
                 createdAt: TF.serverTimestamp()
+            }).then(function () {
+                if (peer) return bumpFirestoreChatUnseenForPeer(chatId, peer);
             });
         }
 
@@ -4828,7 +4894,7 @@
             if (th.firestoreChatId && useFirestoreJoinFlow()) {
                 th.lastAt = '今';
                 th.unread = false;
-                firestoreAppendChatMessage(th.firestoreChatId, text).catch(function () {
+                firestoreAppendChatMessage(th.firestoreChatId, text, peerUserId).catch(function () {
                     showToast('送信に失敗しました');
                 });
                 return;
@@ -5128,6 +5194,12 @@
             }
             if (id === 'chat') {
                 updateChatThanksButtonUI();
+                if (useFirestoreJoinFlow()) {
+                    var thChat = findChatThread();
+                    if (thChat && thChat.firestoreChatId) {
+                        clearFirestoreChatUnseenForMe(thChat.firestoreChatId);
+                    }
+                }
             }
             if (id === 'dm' || id === 'chat') {
                 if (markAllDmAsRead()) {
@@ -5180,7 +5252,8 @@
         function markAllDmAsRead() {
             var changed = false;
             (state.threads || []).forEach(function (t) {
-                if (t && t.unread) {
+                /** Firestore DM の未読は chats.unseenCountByUser で管理（一覧の ● もスナップショットに合わせる） */
+                if (t && t.unread && !t.firestoreChatId) {
                     t.unread = false;
                     changed = true;
                 }
@@ -5189,8 +5262,12 @@
         }
 
         function setUnreadFlag() {
-            var has = state.threads.some(function (t) { return t.unread; });
-            document.getElementById('appShell').classList.toggle('has-unread', has);
+            var hasThreadUnread = state.threads.some(function (t) {
+                return t && t.unread;
+            });
+            var hasFsDm = !!state._fsHasDmUnread;
+            var shell = document.getElementById('appShell');
+            if (shell) shell.classList.toggle('has-unread', hasThreadUnread || hasFsDm);
         }
 
         function hasVisibleNotificationsForMe() {
@@ -5752,6 +5829,7 @@
             var th = findChatThread();
             if (th && th.firestoreChatId && useFirestoreJoinFlow()) {
                 attachFirestoreChatMessagesListener(th.firestoreChatId);
+                clearFirestoreChatUnseenForMe(th.firestoreChatId);
             } else {
                 detachFirestoreChatMessagesListener();
             }
