@@ -4183,12 +4183,18 @@
         function fsNotificationDocToUi(docSnap) {
             var data = docSnap.data() || {};
             var ms = fsTimestampToMs(data.createdAt) || Date.now();
-            var joinSt = data.joinStatus != null ? String(data.joinStatus) : 'pending';
+            var rawJoin = data.joinStatus != null ? String(data.joinStatus) : 'pending';
+            var effectiveJoin = rawJoin;
+            if (rawJoin === 'read' && data.viewedJoinState != null) {
+                effectiveJoin = String(data.viewedJoinState);
+            }
             return {
                 id: docSnap.id,
                 applicationId: String(data.applicationId || '').trim(),
                 type: data.type || 'join_request',
-                joinStatus: joinSt,
+                joinStatus: effectiveJoin,
+                _rawJoinStatus: rawJoin,
+                recipientId: String(data.recipientId || '').trim(),
                 at: formatRelativeNotifShort(ms),
                 _sortAt: ms,
                 organizerName: String(data.organizerName || '').trim(),
@@ -4233,6 +4239,7 @@
             return (state.notifications || []).filter(function (n) {
                 if (!n || n.type !== 'join_request') return false;
                 if (isNotificationDismissedFromList(n.id)) return false;
+                if (n._rawJoinStatus === 'read') return false;
                 var st = n.joinStatus != null ? n.joinStatus : 'pending';
                 if (st !== 'pending') return false;
                 if (n.organizerUserId && uid) return n.organizerUserId === uid;
@@ -4462,6 +4469,7 @@
 
         /** 自分の unseen を 0 に（マップ丸ごと更新でドット記法の不整合を避ける） */
         function clearFirestoreChatUnseenForMe(chatId) {
+            console.log('バッジ消去処理を実行: ', chatId);
             var TF = tf();
             var myUid = String(getMyUserId() || '').trim();
             if (!TF || !chatId || !myUid || !TF.runTransaction) return Promise.resolve();
@@ -4481,6 +4489,58 @@
                 });
             }).catch(function (e) {
                 console.warn('Teertab clearFirestoreChatUnseenForMe', e);
+            });
+        }
+
+        /** 通知一覧を開いたとき: 自分宛の Firestore 参加通知を既読（バッジ用 joinStatus=read、UI用 viewedJoinState） */
+        function markFirestoreJoinNotificationsSeenWhenOpeningList() {
+            console.log('バッジ消去処理を実行: ', 'notifications');
+            var TF = tf();
+            var myUid = String(getMyUserId() || '').trim();
+            if (!TF || !useFirestoreJoinFlow() || !myUid || !TF.updateDoc) return Promise.resolve();
+            var tasks = [];
+            (state.notifications || []).forEach(function (n) {
+                if (!n || !n._firestoreNotification || n.type !== 'join_request') return;
+                if (n.recipientId && n.recipientId !== myUid) return;
+                if (n._rawJoinStatus === 'read') return;
+                var prevSt = n.joinStatus != null ? String(n.joinStatus) : 'pending';
+                tasks.push(
+                    TF.updateDoc(TF.notificationDocRef(n.id), {
+                        joinStatus: 'read',
+                        viewedJoinState: prevSt
+                    })
+                );
+            });
+            if (!tasks.length) return Promise.resolve();
+            return Promise.all(tasks).catch(function (e) {
+                console.warn('Teertab markFirestoreJoinNotificationsSeenWhenOpeningList', e);
+            });
+        }
+
+        /** チャットルーム表示時: 当該 applicationId の参加通知を自分分既読 */
+        function markFirestoreJoinNotificationsSeenForChatRoom(chatRoomId) {
+            console.log('バッジ消去処理を実行: ', chatRoomId);
+            var TF = tf();
+            var myUid = String(getMyUserId() || '').trim();
+            var cid = String(chatRoomId || '').trim();
+            if (!TF || !useFirestoreJoinFlow() || !myUid || !cid || !TF.updateDoc) return Promise.resolve();
+            var tasks = [];
+            (state.notifications || []).forEach(function (n) {
+                if (!n || !n._firestoreNotification || n.type !== 'join_request') return;
+                if (String(n.applicationId || '') !== cid) return;
+                if (n.recipientId && n.recipientId !== myUid) return;
+                if (n._rawJoinStatus === 'read') return;
+                var prevSt = n.joinStatus != null ? String(n.joinStatus) : 'pending';
+                tasks.push(
+                    TF.updateDoc(TF.notificationDocRef(n.id), {
+                        joinStatus: 'read',
+                        viewedJoinState: prevSt
+                    })
+                );
+            });
+            if (!tasks.length) return Promise.resolve();
+            return Promise.all(tasks).catch(function (e) {
+                console.warn('Teertab markFirestoreJoinNotificationsSeenForChatRoom', e);
             });
         }
 
@@ -4599,8 +4659,14 @@
                         },
                         { merge: true }
                     );
-                    batch.update(TF.notificationDocRef(applicationId + '__owner'), { joinStatus: 'approved' });
-                    batch.update(TF.notificationDocRef(applicationId + '__applicant'), { joinStatus: 'approved' });
+                    batch.update(TF.notificationDocRef(applicationId + '__owner'), {
+                        joinStatus: 'approved',
+                        viewedJoinState: 'approved'
+                    });
+                    batch.update(TF.notificationDocRef(applicationId + '__applicant'), {
+                        joinStatus: 'approved',
+                        viewedJoinState: 'approved'
+                    });
                     return batch.commit();
                 })
                 .then(function () {
@@ -5197,6 +5263,11 @@
             }
             if (id === 'notifications') {
                 renderNotifications();
+                markFirestoreJoinNotificationsSeenWhenOpeningList().finally(function () {
+                    updateNotifBadge();
+                    syncAccountTabNotifDot();
+                    renderNotifications();
+                });
             }
             if (id === 'detail') {
                 syncDetailActionBars();
@@ -5217,9 +5288,15 @@
                 if (id === 'chat' && useFirestoreJoinFlow()) {
                     var thClear = findChatThread();
                     if (thClear && thClear.firestoreChatId) {
-                        clearFirestoreChatUnseenForMe(thClear.firestoreChatId).finally(function () {
+                        var cid = thClear.firestoreChatId;
+                        Promise.all([
+                            clearFirestoreChatUnseenForMe(cid),
+                            markFirestoreJoinNotificationsSeenForChatRoom(cid)
+                        ]).finally(function () {
                             setUnreadFlag();
                             renderDmThreads();
+                            updateNotifBadge();
+                            syncAccountTabNotifDot();
                         });
                     } else {
                         setUnreadFlag();
@@ -5296,6 +5373,7 @@
             return (state.notifications || []).some(function (n) {
                 if (!n) return false;
                 if (isNotificationDismissedFromList(n.id)) return false;
+                if (n._firestoreNotification && n._rawJoinStatus === 'read') return false;
                 if (n.type === 'thanks_granted') {
                     if (n.applicantUserId && getMyUserId()) return n.applicantUserId === getMyUserId();
                     return accountsMatch(n.applicantName, me);
@@ -5516,7 +5594,9 @@
                 var isApplicant = n.type === 'join_request' && notifIsApplicant(n);
                 var row = document.createElement('div');
                 var joinSt = (n.type === 'join_request') ? (n.joinStatus != null ? n.joinStatus : 'pending') : 'none';
-                var isPendingJoin = n.type === 'join_request' && joinSt === 'pending' && isHost;
+                var rawListRead = n._rawJoinStatus === 'read';
+                var isPendingJoin =
+                    n.type === 'join_request' && joinSt === 'pending' && isHost && !rawListRead;
                 row.className = 'notif-row' + (isPendingJoin ? ' notif-row--unread' : '');
                 var top = document.createElement('div');
                 top.className = 'notif-row-top';
@@ -5849,10 +5929,16 @@
             navigateTo('chat');
             var th = findChatThread();
             if (th && th.firestoreChatId && useFirestoreJoinFlow()) {
-                attachFirestoreChatMessagesListener(th.firestoreChatId);
-                clearFirestoreChatUnseenForMe(th.firestoreChatId).finally(function () {
+                var cidOpen = th.firestoreChatId;
+                attachFirestoreChatMessagesListener(cidOpen);
+                Promise.all([
+                    clearFirestoreChatUnseenForMe(cidOpen),
+                    markFirestoreJoinNotificationsSeenForChatRoom(cidOpen)
+                ]).finally(function () {
                     setUnreadFlag();
                     renderDmThreads();
+                    updateNotifBadge();
+                    syncAccountTabNotifDot();
                 });
             } else {
                 detachFirestoreChatMessagesListener();

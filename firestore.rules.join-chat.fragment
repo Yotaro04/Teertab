@@ -47,7 +47,7 @@
       allow update: if request.auth != null
         && (resource.data.recipientId == request.auth.uid
             || resource.data.ownerId == request.auth.uid)
-        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joinStatus']);
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['joinStatus', 'viewedJoinState']);
       allow delete: if request.auth != null
         && resource.data.recipientId == request.auth.uid;
     }
