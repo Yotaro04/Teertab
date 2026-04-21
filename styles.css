@@ -1,3 +1,4 @@
+        :root {
             --bg-base: #0f0f10;
             --bg-card: #17171a;
             --primary: #42e6d2; /* teal */
@@ -37,6 +38,13 @@
             padding-bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
             display: flex;
             flex-direction: column;
+            box-sizing: border-box;
+            width: 100%;
+            overflow-x: hidden;
+        }
+        .app-shell img {
+            max-width: 100%;
+            height: auto;
         }
         @media (min-width: 480px) {
             .app-shell {
@@ -72,9 +80,11 @@
         }
         .header-brand-logo {
             display: block;
-            width: 116px;
-            max-width: 100%;
+            width: auto;
+            max-width: min(200px, 48vw);
             height: auto;
+            object-fit: contain;
+            vertical-align: middle;
         }
         .app-shell[data-tab="home"] .header-brand {
             display: inline-flex;
@@ -169,6 +179,9 @@
         .header-nav-btn svg {
             width: 22px;
             height: 22px;
+            max-width: 22px;
+            max-height: 22px;
+            flex-shrink: 0;
         }
         .app-shell.has-back .header-nav-btn {
             display: inline-flex;
@@ -208,6 +221,8 @@
         .header-action-btn svg {
             width: 22px;
             height: 22px;
+            max-width: 22px;
+            max-height: 22px;
             flex-shrink: 0;
         }
         .header-action-btn:active { opacity: 0.7; color: #fff; }
@@ -256,6 +271,9 @@
         .header-icon svg {
             width: 26px;
             height: 26px;
+            max-width: 26px;
+            max-height: 26px;
+            flex-shrink: 0;
             color: #0a0a0a;
         }
         .header-request-title {
@@ -784,6 +802,9 @@
         .home-loading-spinner {
             width: 16px;
             height: 16px;
+            max-width: 18px;
+            max-height: 18px;
+            flex-shrink: 0;
             border-radius: 999px;
             border: 2px solid rgba(255, 255, 255, 0.22);
             border-top-color: rgba(255, 255, 255, 0.9);
@@ -2084,6 +2105,10 @@
             bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 22px);
             width: 56px;
             height: 56px;
+            max-width: 56px;
+            max-height: 56px;
+            box-sizing: border-box;
+            flex-shrink: 0;
             border-radius: 999px;
             border: none;
             background: var(--primary);
@@ -2225,18 +2250,31 @@
             align-items: center;
             justify-content: center;
             padding: 24px;
+            padding-left: max(24px, env(safe-area-inset-left, 0px));
+            padding-right: max(24px, env(safe-area-inset-right, 0px));
             background: var(--bg-base);
+            box-sizing: border-box;
+            width: 100%;
+            overflow-x: hidden;
         }
         .auth-gate.open {
             display: flex;
         }
         .auth-card {
-            width: min(360px, 92vw);
+            width: min(360px, 100%);
+            max-width: 100%;
             background: var(--bg-card);
             border-radius: 20px;
             border: 1px solid var(--stroke);
             padding: 24px;
             text-align: center;
+            box-sizing: border-box;
+        }
+        .auth-card > .btn {
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
+            flex: none;
         }
         .auth-card h1 {
             margin: 0 0 10px;
@@ -2276,7 +2314,9 @@
         }
         .auth-form .profile-edit-input {
             width: 100%;
+            max-width: 100%;
             box-sizing: border-box;
+            min-width: 0;
         }
         .auth-form-actions {
             display: flex;
