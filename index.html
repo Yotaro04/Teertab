@@ -3073,42 +3073,66 @@
             var TF = tf();
             var col = getPostsColRef();
             if (!TF || !col) return;
-            if (typeof teertabUserCardsUnsub === 'function') teertabUserCardsUnsub();
-            teertabUserCardsUnsub = TF.onSnapshot(col, function (snap) {
-                var cards = [];
-                var sigParts = [];
-                snap.forEach(function (d) {
-                    var card = d.data() || {};
-                    card.id = card.id || d.id;
-                    cards.push(card);
-                    var updatedAt = card.updatedAt;
-                    var updatedSig = '';
-                    if (updatedAt && typeof updatedAt.toMillis === 'function') {
-                        updatedSig = String(updatedAt.toMillis());
-                    } else if (updatedAt && typeof updatedAt === 'object' && typeof updatedAt.seconds === 'number') {
-                        updatedSig = String(updatedAt.seconds) + ':' + String(updatedAt.nanoseconds || 0);
+            /** ログアウトまで一度だけ購読。解除→再接続のちらつきと、キャッシュ空の一時スナップショットでの全消しを防ぐ */
+            if (typeof teertabUserCardsUnsub === 'function') return;
+            teertabUserCardsUnsub = TF.onSnapshot(
+                col,
+                function (snap) {
+                    var cards = [];
+                    var sigParts = [];
+                    snap.forEach(function (d) {
+                        var card = d.data() || {};
+                        card.id = card.id || d.id;
+                        cards.push(card);
+                        var updatedAt = card.updatedAt;
+                        var updatedSig = '';
+                        if (updatedAt && typeof updatedAt.toMillis === 'function') {
+                            updatedSig = String(updatedAt.toMillis());
+                        } else if (updatedAt && typeof updatedAt === 'object' && typeof updatedAt.seconds === 'number') {
+                            updatedSig = String(updatedAt.seconds) + ':' + String(updatedAt.nanoseconds || 0);
+                        }
+                        sigParts.push([
+                            card.id || '',
+                            card.title || '',
+                            card.authorId || '',
+                            card.joined || 0,
+                            card.capacity || 0,
+                            card.image ? 1 : 0,
+                            updatedSig
+                        ].join('|'));
+                    });
+                    sigParts.sort();
+                    var sig = sigParts.join('||');
+                    var fromCache = !!(snap.metadata && snap.metadata.fromCache);
+                    var hasCachedPostsInState = Object.keys(state.vols || {}).some(function (k) {
+                        if (k.indexOf('vol-user-') !== 0) return false;
+                        var v = state.vols[k];
+                        return v && !isVolFilled(v);
+                    });
+                    /** キャッシュのみ・0件のイベントで state を空にしない（タブ復帰・WebView でよくある） */
+                    if (!cards.length && fromCache) {
+                        if (state.homePostsLoadedOnce || hasCachedPostsInState) {
+                            state.homePostsLoading = false;
+                            updateHomeEmptyState();
+                            return;
+                        }
+                        state.homePostsLoading = true;
+                        updateHomeEmptyState();
+                        return;
                     }
-                    sigParts.push([
-                        card.id || '',
-                        card.title || '',
-                        card.authorId || '',
-                        card.joined || 0,
-                        card.capacity || 0,
-                        card.image ? 1 : 0,
-                        updatedSig
-                    ].join('|'));
-                });
-                sigParts.sort();
-                var sig = sigParts.join('||');
-                state.homePostsLoading = false;
-                if (state.homePostsLoadedOnce && state._postsSnapshotSig === sig) {
-                    updateHomeEmptyState();
-                    return;
+                    state.homePostsLoading = false;
+                    if (state.homePostsLoadedOnce && state._postsSnapshotSig === sig) {
+                        updateHomeEmptyState();
+                        return;
+                    }
+                    state.homePostsLoadedOnce = true;
+                    state._postsSnapshotSig = sig;
+                    applyPostsToState(cards);
+                },
+                function (e) {
+                    console.warn('Teertab posts listener', e);
                 }
-                state.homePostsLoadedOnce = true;
-                state._postsSnapshotSig = sig;
-                applyPostsToState(cards);
-            });
+            );
         }
 
         function upsertPostDocument(v) {
@@ -4881,7 +4905,11 @@
             var hint = document.getElementById('homeEmptyHint');
             var loading = document.getElementById('homeLoadingState');
             if (!homeCards || !hint || !loading) return;
-            var hasCards = !!homeCards.querySelector('[data-open-detail]');
+            /** DOM が一瞬空でも、取得済み state があれば「空」と誤表示しない */
+            var hasCards = Object.keys(state.vols || {}).some(function (k) {
+                var v = state.vols[k];
+                return k.indexOf('vol-user-') === 0 && v && !isVolFilled(v);
+            });
             loading.hidden = !state.homePostsLoading || hasCards;
             hint.hidden = state.homePostsLoading || hasCards;
         }
@@ -5478,6 +5506,7 @@
             if (id === 'home') {
                 var homeNav = document.querySelector('.bottom-nav .nav-item[data-section="home"]');
                 if (homeNav) homeNav.classList.add('active');
+                renderHomeCardsFromState();
                 updateHomeJoinRequestBanner();
             }
             if (id === 'account') {
@@ -6910,6 +6939,9 @@
                     Object.keys(state.vols || {}).forEach(function (k) {
                         if (k.indexOf('vol-user-') === 0) delete state.vols[k];
                     });
+                    state.homePostsLoading = true;
+                    state.homePostsLoadedOnce = false;
+                    state._postsSnapshotSig = '';
                     state.dismissedNotifsRemote = {};
                     if (typeof teertabUserDocUnsub === 'function') teertabUserDocUnsub();
                     teertabUserDocUnsub = null;
