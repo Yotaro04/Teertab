@@ -141,6 +141,9 @@
             _postsSnapshotSig: ''
         };
 
+        /** Firestore posts の最終スナップショット（タブ復帰時に state が空でも即再描画） */
+        window.allPostsCache = [];
+
         /** true にするとアカウントに「同期ログイン」（電話番号）を出す。準備中は false のまま */
         var PHONE_LOGIN_ACCOUNT_UI_ENABLED = false;
 
@@ -1757,24 +1760,51 @@
         function setHeaderTitleForTab(tab) {
             var t = document.getElementById('headerTitle');
             if (!t) return;
-            if (tab === 'search') t.textContent = '検索';
+            if (tab === 'home') t.textContent = 'ホーム';
+            else if (tab === 'account') t.textContent = 'アカウント';
+            else if (tab === 'search') t.textContent = '検索';
             else if (tab === 'detail') t.textContent = '詳細';
             else if (tab === 'dm') t.textContent = 'DM';
             else if (tab === 'notifications') t.textContent = '通知';
             else if (tab === 'chat') t.textContent = state.currentChatWith || 'DM';
             else if (tab === 'organizer') t.textContent = 'プロフィール';
             else if (tab === 'accountProfileEdit') t.textContent = 'プロフィール編集';
+            else if (tab === 'request') t.textContent = '募集する';
             else t.textContent = '検索';
         }
 
 
+        function restoreHomeFromPostsCacheIfNeeded() {
+            var cache = window.allPostsCache;
+            if (!Array.isArray(cache) || !cache.length) return;
+            applyPostsToState(cache.map(function (item) {
+                return Object.assign({}, item);
+            }));
+        }
+
         function activateView(id) {
+            /** 先に表示セクションを切り替える（ホームの復元処理で例外が出てもタブ遷移が死なないようにする） */
             document.querySelectorAll('.content-section').forEach(function (s) { s.classList.remove('active'); });
             var el = document.getElementById(id);
             if (el) el.classList.add('active');
-            document.getElementById('appShell').dataset.tab = id;
+            var shell = document.getElementById('appShell');
+            if (shell) {
+                shell.dataset.tab = id;
+                shell.classList.toggle('has-back', state.viewStack.length > 1);
+            }
             setHeaderTitleForTab(id);
-            document.getElementById('appShell').classList.toggle('has-back', state.viewStack.length > 1);
+            if (id === 'home') {
+                try {
+                    restoreHomeFromPostsCacheIfNeeded();
+                    renderHomeCardsFromState();
+                    updateHomeJoinRequestBanner();
+                    if (typeof liveSyncPullOnce === 'function') {
+                        liveSyncPullOnce();
+                    }
+                } catch (err) {
+                    console.warn('Teertab activateView home', err);
+                }
+            }
             if (id === 'search') {
                 var sq = document.getElementById('search-q');
                 if (sq && typeof state.filters.q === 'string') sq.value = state.filters.q;
@@ -1829,8 +1859,6 @@
             if (id === 'home') {
                 var homeNav = document.querySelector('.bottom-nav .nav-item[data-section="home"]');
                 if (homeNav) homeNav.classList.add('active');
-                renderHomeCardsFromState();
-                updateHomeJoinRequestBanner();
             }
             if (id === 'account') {
                 var accountNav = document.querySelector('.bottom-nav .nav-item[data-section="account"]');
@@ -1863,8 +1891,12 @@
         function showSection(id, navEl) {
             state.viewStack = [id];
             activateView(id);
-            document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
-            if (navEl) navEl.classList.add('active');
+            document.querySelectorAll('.bottom-nav .nav-item').forEach(function (n) { n.classList.remove('active'); });
+            var tabBtn =
+                (navEl && navEl.getAttribute && navEl.getAttribute('data-section') === id && navEl) ||
+                document.querySelector('.bottom-nav .nav-item[data-section="' + id + '"]');
+            if (tabBtn) tabBtn.classList.add('active');
+            syncAccountTabNotifDot();
         }
 
         function markAllDmAsRead() {
@@ -2457,6 +2489,18 @@
             if (document.body && document.body.dataset.cardDelegationFallbackBound !== '1') {
                 document.body.dataset.cardDelegationFallbackBound = '1';
                 document.addEventListener('click', function (e) {
+                    var t = e.target;
+                    if (t && t.closest) {
+                        if (
+                            t.closest('.bottom-nav') ||
+                            t.closest('.header') ||
+                            t.closest('#requestFab') ||
+                            t.closest('.modal.open') ||
+                            t.closest('#authGate.open')
+                        ) {
+                            return;
+                        }
+                    }
                     var consumed = handleCardActivationFromEvent(e, null);
                     if (consumed) {
                         e.preventDefault();
@@ -3148,6 +3192,7 @@
                     state.homePostsLoading = true;
                     state.homePostsLoadedOnce = false;
                     state._postsSnapshotSig = '';
+                    window.allPostsCache = [];
                     state.dismissedNotifsRemote = {};
                     if (typeof teertabUserDocUnsub === 'function') teertabUserDocUnsub();
                     teertabUserDocUnsub = null;
@@ -3321,7 +3366,12 @@
                     var tagRaw = String((tagsInput && tagsInput.value) || '');
                     var tags = tagRaw.split(/[\s,、]+/).map(hashTag).filter(Boolean);
 
-                    var id = 'vol-user-' + Date.now();
+                    /** Date.now() のみだと同一ミリ秒内の投稿が同じ id になり Firestore で上書きされる */
+                    var id =
+                        'vol-user-' +
+                        (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+                            ? crypto.randomUUID()
+                            : Date.now() + '-' + Math.random().toString(36).slice(2, 12));
                     var posterUid = getMyUserId();
                     var v = {
                         id: id,
@@ -3473,7 +3523,7 @@
 
             var searchBtn = document.getElementById('searchBtn');
             if (searchBtn) searchBtn.addEventListener('click', function () {
-                document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+                document.querySelectorAll('.bottom-nav .nav-item').forEach(function (n) { n.classList.remove('active'); });
                 navigateTo('search');
                 var sq = document.getElementById('search-q');
                 if (sq) {
@@ -3486,7 +3536,7 @@
 
             var dmBtn = document.getElementById('dmBtn');
             if (dmBtn) dmBtn.addEventListener('click', function () {
-                document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+                document.querySelectorAll('.bottom-nav .nav-item').forEach(function (n) { n.classList.remove('active'); });
                 navigateTo('dm');
                 renderDmThreads();
             });
@@ -3495,7 +3545,7 @@
 
             var notifBtn = document.getElementById('notifBtn');
             if (notifBtn) notifBtn.addEventListener('click', function () {
-                document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+                document.querySelectorAll('.bottom-nav .nav-item').forEach(function (n) { n.classList.remove('active'); });
                 navigateTo('notifications');
                 renderNotifications();
             });
@@ -3506,10 +3556,18 @@
             var requestFab = document.getElementById('requestFab');
             if (requestFab) {
                 requestFab.addEventListener('click', function () {
-                    document.querySelectorAll('.nav-item').forEach(function (n) { n.classList.remove('active'); });
+                    document.querySelectorAll('.bottom-nav .nav-item').forEach(function (n) { n.classList.remove('active'); });
                     navigateTo('request');
                 });
             }
+
+            document.querySelectorAll('.bottom-nav .nav-item[data-section]').forEach(function (btn) {
+                var section = btn.getAttribute('data-section');
+                if (!section) return;
+                btn.addEventListener('click', function () {
+                    showSection(section, btn);
+                });
+            });
 
             setupCardEventDelegation();
 

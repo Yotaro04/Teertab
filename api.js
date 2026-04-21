@@ -249,6 +249,9 @@
             mine.forEach(function (v) {
                 if (v && v.id) state.myHostedVolIds[v.id] = true;
             });
+            window.allPostsCache = nextList.map(function (item) {
+                return Object.assign({}, item);
+            });
             renderSearchResults();
             renderAccount();
             renderHomeCardsFromState();
@@ -304,6 +307,27 @@
                         state.homePostsLoading = true;
                         updateHomeEmptyState();
                         return;
+                    }
+                    /** サーバー由来の一時的な 0 件（タブ復帰・バックグラウンド復帰）でキャッシュを潰さない */
+                    if (!cards.length && !fromCache) {
+                        var cacheLenGuard = (window.allPostsCache && window.allPostsCache.length) || 0;
+                        if (cacheLenGuard > 0) {
+                            state.homePostsLoading = false;
+                            var hasVisPostsGuard = Object.keys(state.vols || {}).some(function (k) {
+                                if (k.indexOf('vol-user-') !== 0) return false;
+                                var vv = state.vols[k];
+                                return vv && !isVolFilled(vv);
+                            });
+                            if (!hasVisPostsGuard) {
+                                applyPostsToState(window.allPostsCache.map(function (item) {
+                                    return Object.assign({}, item);
+                                }));
+                            } else {
+                                updateHomeEmptyState();
+                                renderHomeCardsFromState();
+                            }
+                            return;
+                        }
                     }
                     state.homePostsLoading = false;
                     if (state.homePostsLoadedOnce && state._postsSnapshotSig === sig) {

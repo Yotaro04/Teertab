@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>ホーム</title>
-    <link rel="stylesheet" href="./styles.css?v=1.1">
+    <link rel="stylesheet" href="styles.css?v=5">
     <script type="importmap">
     {
         "imports": {
@@ -367,17 +367,17 @@
     <button type="button" class="request-fab" id="requestFab" aria-label="募集する" title="募集する">
         <span class="fab-plus" aria-hidden="true"></span>
     </button>
-    <nav class="bottom-nav">
-        <div class="nav-item active" data-section="home" onclick="showSection('home', this)">
+    <nav class="bottom-nav" aria-label="メイン">
+        <button type="button" class="nav-item active" data-section="home">
             <span class="nav-icon">🏠</span>ホーム
-        </div>
-        <div class="nav-item" data-section="account" onclick="showSection('account', this)">
+        </button>
+        <button type="button" class="nav-item" data-section="account">
             <span class="nav-item-account-visual" aria-hidden="true"><span class="nav-icon">👤</span></span>アカウント
-        </div>
+        </button>
     </nav>
 </div>
-    <script src="./components.js?v=1.1"></script>
-    <script src="./api.js?v=1.1"></script>
-    <script src="./app.js?v=1.1"></script>
+    <script src="components.js?v=6"></script>
+    <script src="api.js?v=6"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>

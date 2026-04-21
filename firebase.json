@@ -1,5 +1,6 @@
 {
   "hosting": {
+    "site": "teertab-da748",
     "public": "dist",
     "ignore": [
       "firebase.json",

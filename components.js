@@ -104,25 +104,65 @@
                 var v = state.vols[k];
                 return k.indexOf('vol-user-') === 0 && v && !isVolFilled(v);
             });
-            loading.hidden = !state.homePostsLoading || hasCards;
-            hint.hidden = state.homePostsLoading || hasCards;
+            var cacheLen = (typeof window !== 'undefined' && window.allPostsCache && window.allPostsCache.length) || 0;
+            var domHasCards = !!homeCards.querySelector('[data-open-detail]');
+            /** Firestore 応答完了後・ローディングでない・state もキャッシュも DOM も空のときだけ「ありません」 */
+            var showEmptyHint =
+                state.homePostsLoadedOnce &&
+                !state.homePostsLoading &&
+                !hasCards &&
+                cacheLen === 0 &&
+                !domHasCards;
+            /** 取得中、またはキャッシュからまだ state に載っていない間はローディング扱い */
+            var showLoadingUi = state.homePostsLoading || (!hasCards && cacheLen > 0);
+            loading.hidden = !showLoadingUi;
+            hint.hidden = !showEmptyHint;
         }
 
         function renderHomeCardsFromState() {
             var homeCards = document.getElementById('homeCards');
             var create = window.__tfCreateHomeCard;
             if (!homeCards || typeof create !== 'function') return;
-            homeCards.querySelectorAll('[data-open-detail]').forEach(function (el) {
-                if (el && el.parentNode) el.parentNode.removeChild(el);
-            });
+
+            var cacheLen = (typeof window !== 'undefined' && window.allPostsCache && window.allPostsCache.length) || 0;
+            /** いったん state を埋めてから DOM を触る（空のまま全削除しない） */
+            if (cacheLen > 0 && typeof applyPostsToState === 'function') {
+                var hasVisible = Object.keys(state.vols || {}).some(function (k) {
+                    var v = state.vols[k];
+                    return k.indexOf('vol-user-') === 0 && v && !isVolFilled(v);
+                });
+                if (!hasVisible) {
+                    applyPostsToState(
+                        window.allPostsCache.map(function (item) {
+                            return Object.assign({}, item);
+                        })
+                    );
+                }
+            }
+
             var ordered = Object.keys(state.vols || {}).map(function (id) {
                 return state.vols[id];
             }).filter(function (vol) {
                 return vol && vol.id && String(vol.id).indexOf('vol-user-') === 0 && !isVolFilled(vol);
             });
-            for (var i = ordered.length - 1; i >= 0; i--) {
-                homeCards.insertBefore(create(ordered[i]), homeCards.firstChild);
+
+            var mayPurgeStaleDom =
+                ordered.length > 0 ||
+                (cacheLen === 0 && !state.homePostsLoading && state.homePostsLoadedOnce);
+
+            if (ordered.length > 0) {
+                homeCards.querySelectorAll('[data-open-detail]').forEach(function (el) {
+                    if (el && el.parentNode) el.parentNode.removeChild(el);
+                });
+                for (var i = ordered.length - 1; i >= 0; i--) {
+                    homeCards.insertBefore(create(ordered[i]), homeCards.firstChild);
+                }
+            } else if (mayPurgeStaleDom) {
+                homeCards.querySelectorAll('[data-open-detail]').forEach(function (el) {
+                    if (el && el.parentNode) el.parentNode.removeChild(el);
+                });
             }
+
             updateHomeEmptyState();
         }
 

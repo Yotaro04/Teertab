@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "build": "rm -rf dist && mkdir -p dist/assets && cp index.html styles.css components.js api.js app.js teertab-firebase-runtime.mjs firebase-config.js dist/ && cp assets/* dist/assets/"
+    "build": "rm -rf dist && mkdir -p dist/assets && cp index.html styles.css components.js api.js app.js teertab-firebase-runtime.mjs firebase-config.js dist/ && ([ -d assets ] && cp -R assets/. dist/assets/ || true)"
   },
   "dependencies": {
     "firebase": "^12.12.0"
