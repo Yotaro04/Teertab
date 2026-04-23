@@ -23,29 +23,52 @@
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'approvedAt']);
     }
 
-    // --- notifications（submitJoinApplicationFirestore の notifPayload と一致）---
+    // --- notifications（submitJoinApplicationFirestore の notifPayload / postThanksTipFirestore と一致）---
     match /notifications/{nid} {
       allow read: if request.auth != null
         && resource.data.recipientId == request.auth.uid;
       allow create: if request.auth != null
-        && request.resource.data.applicantId == request.auth.uid
-        && request.resource.data.keys().hasOnly([
-          'recipientId', 'ownerId', 'applicantId', 'applicationId', 'type', 'joinStatus', 'viewedJoinState',
-          'volTitle', 'volId', 'postId', 'organizerUserId', 'applicantUserId',
-          'organizerName', 'applicantName', 'createdAt'
-        ])
-        && request.resource.data.recipientId is string
-        && request.resource.data.ownerId is string
-        && request.resource.data.applicantId is string
-        && request.resource.data.applicationId is string
-        && request.resource.data.type == 'join_request'
-        && request.resource.data.joinStatus == 'pending'
-        && request.resource.data.viewedJoinState is bool
-        && request.resource.data.viewedJoinState == false
-        && request.resource.data.postId is string
-        && request.resource.data.volId is string
-        && request.resource.data.organizerUserId is string
-        && request.resource.data.applicantUserId is string;
+        && (
+          (
+            request.resource.data.applicantId == request.auth.uid
+            && request.resource.data.keys().hasOnly([
+              'recipientId', 'ownerId', 'applicantId', 'applicationId', 'type', 'joinStatus', 'viewedJoinState',
+              'volTitle', 'volId', 'postId', 'organizerUserId', 'applicantUserId',
+              'organizerName', 'applicantName', 'createdAt'
+            ])
+            && request.resource.data.recipientId is string
+            && request.resource.data.ownerId is string
+            && request.resource.data.applicantId is string
+            && request.resource.data.applicationId is string
+            && request.resource.data.type == 'join_request'
+            && request.resource.data.joinStatus == 'pending'
+            && request.resource.data.viewedJoinState is bool
+            && request.resource.data.viewedJoinState == false
+            && request.resource.data.postId is string
+            && request.resource.data.volId is string
+            && request.resource.data.organizerUserId is string
+            && request.resource.data.applicantUserId is string
+          )
+          || (
+            request.resource.data.applicantId == request.auth.uid
+            && request.resource.data.keys().hasOnly([
+              'recipientId', 'organizerUserId', 'applicantUserId', 'applicantId',
+              'type', 'thanksAmount', 'organizerName', 'applicantName', 'volTitle', 'createdAt'
+            ])
+            && request.resource.data.recipientId is string
+            && request.resource.data.recipientId == request.resource.data.organizerUserId
+            && request.resource.data.organizerUserId is string
+            && request.resource.data.applicantUserId is string
+            && request.resource.data.applicantUserId == request.resource.data.applicantId
+            && request.resource.data.type == 'thanks_tip'
+            && request.resource.data.thanksAmount is number
+            && request.resource.data.thanksAmount >= 1
+            && request.resource.data.thanksAmount <= 10000
+            && request.resource.data.organizerName is string
+            && request.resource.data.applicantName is string
+            && request.resource.data.volTitle is string
+          )
+        );
       allow update: if request.auth != null
         && (resource.data.recipientId == request.auth.uid
             || resource.data.ownerId == request.auth.uid)

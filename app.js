@@ -217,6 +217,9 @@
             if (liveSyncEnabled() && getMyUserId()) {
                 liveSyncPatchProfile({ thanksCount: state.profile.thanksCount }, function () {});
             }
+            if (useFirestoreJoinFlow() && typeof patchMyUserThanksCountToFirestore === 'function') {
+                patchMyUserThanksCountToFirestore();
+            }
         }
 
         function syncAuthStorageDisplayNameFromProfile() {
@@ -446,6 +449,28 @@
                 }
             });
             return hit;
+        }
+
+        /** ありがとう送信用: 明示 UID → 表示名から usersPublic 照会 → 詳細中の募集の主催者 */
+        function resolveOrganizerUserIdForThanks(explicitUid, organizerDisplayName) {
+            var u = String(explicitUid || '').trim();
+            if (u) return u;
+            var nm = String(organizerDisplayName || '').trim();
+            if (nm) {
+                var byName = userIdForDisplayName(nm);
+                if (byName) return byName;
+            }
+            var vid = state.currentDetailId;
+            var d = vid && state.vols ? state.vols[vid] : null;
+            if (d) {
+                u = String(d.hostedByUserId || d.authorId || '').trim();
+                if (u) return u;
+                if (d.chatWith) {
+                    byName = userIdForDisplayName(String(d.chatWith || '').trim());
+                    if (byName) return byName;
+                }
+            }
+            return '';
         }
 
         function publicProfileForUidOrName(uid, displayName) {
@@ -748,6 +773,8 @@
         function consumeThanksGrantedForMe() {
             var me = syncAccountNameFromDom();
             if (!me) return;
+            /** Firestore: postThanksGrantedBatchFirestore が参加者 users を increment 済み */
+            if (useFirestoreJoinFlow()) return;
             if (!state.consumedThanksNotifIds) state.consumedThanksNotifIds = {};
             var bumped = false;
             (state.notifications || []).forEach(function (n) {
@@ -771,12 +798,15 @@
         function consumeThanksTipForOrganizer() {
             var me = getMyUserId();
             if (!me) return;
+            /** Firestore 参加フロー: postThanksTipFirestore が募集者 users を increment 済み（二重加算防止） */
+            if (useFirestoreJoinFlow()) return;
             if (!state.consumedThanksTipNotifIds) state.consumedThanksTipNotifIds = {};
             var bumped = false;
             (state.notifications || []).forEach(function (n) {
                 if (!n || n.type !== 'thanks_tip') return;
-                if (n.organizerUserId !== me) return;
+                if (String(n.organizerUserId || '').trim() !== String(me || '').trim()) return;
                 if (state.consumedThanksTipNotifIds[n.id]) return;
+                if (liveSyncEnabled()) return;
                 state.consumedThanksTipNotifIds[n.id] = true;
                 var add = 1;
                 if (n.thanksAmount != null) {
@@ -868,45 +898,105 @@
                 showToast('ありがとうが足りません（必要 ' + total + ' / 所持 ' + bal + '）');
                 return;
             }
-            state.profile.thanksCount = bal - total;
-            persistProfileThanksCount();
 
             var me = syncAccountNameFromDom();
             var applicantsDone = {};
             var dmDone = {};
             var tick = Date.now();
-            pendingList.forEach(function (n, idx) {
-                n.thanksGranted = true;
-                liveSyncPatchNotification(n.id, { thanksGranted: true });
-                var app = normalizeDisplayName(n.applicantName || '参加者') || '参加者';
-                if (!applicantsDone[app]) {
-                    applicantsDone[app] = true;
-                    var tgN = {
-                        id: 'notif-thanks-' + tick + '-' + idx + '-' + Math.random().toString(36).slice(2, 7),
-                        type: 'thanks_granted',
-                        at: '今',
+
+            function finishHostGrantUi() {
+                closeHostGrantThanksModal();
+                setUnreadFlag();
+                renderDmThreads();
+                renderNotifications();
+                updateDetailVolunteerDayUI();
+                showToast('ありがとうを送り、参加者に付与しました。');
+            }
+
+            function runAfterDecrementForEachPending() {
+                state.profile.thanksCount = bal - total;
+                persistProfileThanksCount();
+                pendingList.forEach(function (n, idx) {
+                    n.thanksGranted = true;
+                    if (useFirestoreJoinFlow() && typeof patchJoinNotificationThanksGrantedFirestore === 'function') {
+                        patchJoinNotificationThanksGrantedFirestore(n.id, function () {});
+                    } else {
+                        liveSyncPatchNotification(n.id, { thanksGranted: true });
+                    }
+                    var app = normalizeDisplayName(n.applicantName || '参加者') || '参加者';
+                    if (!applicantsDone[app]) {
+                        applicantsDone[app] = true;
+                        var tgN = {
+                            id: 'notif-thanks-' + tick + '-' + idx + '-' + Math.random().toString(36).slice(2, 7),
+                            type: 'thanks_granted',
+                            at: '今',
+                            organizerName: me,
+                            applicantName: app,
+                            organizerUserId: getMyUserId() || undefined,
+                            applicantUserId: n.applicantUserId || undefined,
+                            volTitle: n.volTitle || v.title || '',
+                            volId: vid,
+                            thanksAmount: per
+                        };
+                        if (!useFirestoreJoinFlow()) {
+                            liveSyncPostNotification(tgN);
+                        }
+                        state.notifications.unshift(tgN);
+                    }
+                    if (!dmDone[app]) {
+                        dmDone[app] = true;
+                        appendOutgoingDm(app, '当日はありがとうございました。とても助かりました。', n.applicantUserId || '');
+                    }
+                });
+                finishHostGrantUi();
+            }
+
+            if (useFirestoreJoinFlow()) {
+                var grantRows = [];
+                var seenApp = {};
+                var missingUid = false;
+                pendingList.forEach(function (n) {
+                    var app = normalizeDisplayName(n.applicantName || '参加者') || '参加者';
+                    if (seenApp[app]) return;
+                    seenApp[app] = true;
+                    var auid = String(n.applicantUserId || '').trim();
+                    if (!auid) {
+                        missingUid = true;
+                        return;
+                    }
+                    grantRows.push({
+                        applicantUserId: auid,
+                        thanksAmount: per,
+                        organizerUserId: getMyUserId() || '',
                         organizerName: me,
                         applicantName: app,
-                        organizerUserId: getMyUserId() || undefined,
-                        applicantUserId: n.applicantUserId || undefined,
                         volTitle: n.volTitle || v.title || '',
-                        volId: vid,
-                        thanksAmount: per
-                    };
-                    liveSyncPostNotification(tgN);
-                    state.notifications.unshift(tgN);
+                        volId: vid
+                    });
+                });
+                if (missingUid || grantRows.length !== uniq) {
+                    showToast(
+                        '参加者のユーザーIDが取れないため付与できません。承認済みの参加通知（Firestore）を確認してください'
+                    );
+                    return;
                 }
-                if (!dmDone[app]) {
-                    dmDone[app] = true;
-                    appendOutgoingDm(app, '当日はありがとうございました。とても助かりました。', n.applicantUserId || '');
+                if (typeof postThanksGrantedBatchFirestore !== 'function') {
+                    showToast('内部エラー: 付与APIがありません');
+                    return;
                 }
-            });
-            closeHostGrantThanksModal();
-            setUnreadFlag();
-            renderDmThreads();
-            renderNotifications();
-            updateDetailVolunteerDayUI();
-            showToast('ありがとうを送り、参加者に付与しました。');
+                postThanksGrantedBatchFirestore(grantRows, function (ok) {
+                    if (!ok) {
+                        showToast('ありがとうの付与を保存できませんでした（Firestore）');
+                        return;
+                    }
+                    applicantsDone = {};
+                    dmDone = {};
+                    runAfterDecrementForEachPending();
+                });
+                return;
+            }
+
+            runAfterDecrementForEachPending();
         }
 
         function syncDetailActionBars() {
@@ -1181,19 +1271,24 @@
         }
 
         /**
-         * HTTP 同期のみ: バンドル usersPublic の thanksCount をプロフィールに揃える。
-         * Firebase では users/{uid} が正であり、古い usersPublic で上書きすると残高が壊れてありがとうを送れなくなる。
+         * バンドル usersPublic.thanksCount をプロフィールに反映。
+         * - HTTP 同期: サーバー値を正とする（srv !== cur で更新）。
+         * - Firebase: thanks_tip 等でサーバーが usersPublic を増やすため srv > cur のときだけ反映し、
+         *   古い usersPublic で所持を下げない（以前の不具合対策）。
          */
         function reconcileProfileThanksFromUsersPublic() {
             if (!liveSyncEnabled()) return;
-            if (firebaseSyncActive()) return;
             var myUid = getMyUserId();
             if (!myUid || !state.usersPublic) return;
             var pub = state.usersPublic[myUid];
             if (!pub || typeof pub.thanksCount !== 'number' || !isFinite(pub.thanksCount)) return;
             var srv = Math.max(0, Math.floor(pub.thanksCount));
             var cur = Math.max(0, Math.floor(Number(state.profile.thanksCount) || 0));
-            if (srv === cur) return;
+            if (firebaseSyncActive()) {
+                if (srv <= cur) return;
+            } else {
+                if (srv === cur) return;
+            }
             state.profile.thanksCount = srv;
             savePersistedProfile();
             applyProfileToAccountDom();
@@ -1248,6 +1343,47 @@
 
         function fsNotificationDocToUi(docSnap) {
             var data = docSnap.data() || {};
+            var fsType = String(data.type || 'join_request');
+            if (fsType === 'thanks_tip') {
+                var msTip = fsTimestampToMs(data.createdAt) || Date.now();
+                var ta = data.thanksAmount != null ? Math.floor(Number(data.thanksAmount)) : 1;
+                return {
+                    id: docSnap.id,
+                    type: 'thanks_tip',
+                    recipientId: String(data.recipientId || '').trim(),
+                    at: formatRelativeNotifShort(msTip),
+                    _sortAt: msTip,
+                    organizerName: String(data.organizerName || '').trim(),
+                    applicantName: String(data.applicantName || '').trim(),
+                    organizerUserId: String(data.organizerUserId || '').trim(),
+                    applicantUserId: String(data.applicantUserId || '').trim(),
+                    volTitle: String(data.volTitle || '').trim(),
+                    thanksAmount: isFinite(ta) && ta >= 1 ? ta : 1,
+                    _firestoreNotification: true,
+                    _joinNotifUnread: false
+                };
+            }
+            if (fsType === 'thanks_granted') {
+                var msG = fsTimestampToMs(data.createdAt) || Date.now();
+                var tG = data.thanksAmount != null ? Math.floor(Number(data.thanksAmount)) : 1;
+                return {
+                    id: docSnap.id,
+                    type: 'thanks_granted',
+                    recipientId: String(data.recipientId || '').trim(),
+                    at: formatRelativeNotifShort(msG),
+                    _sortAt: msG,
+                    organizerName: String(data.organizerName || '').trim(),
+                    applicantName: String(data.applicantName || '').trim(),
+                    organizerUserId: String(data.organizerUserId || '').trim(),
+                    applicantUserId: String(data.applicantUserId || '').trim(),
+                    volTitle: String(data.volTitle || '').trim(),
+                    volId: String(data.volId || '').trim(),
+                    thanksAmount: isFinite(tG) && tG >= 1 ? tG : 1,
+                    thanksGranted: true,
+                    _firestoreNotification: true,
+                    _joinNotifUnread: false
+                };
+            }
             var ms = fsTimestampToMs(data.createdAt) || Date.now();
             var joinStatusRaw = data.joinStatus != null ? String(data.joinStatus) : 'pending';
             var legacyListRead = joinStatusRaw === 'read';
@@ -1286,7 +1422,12 @@
             var bundle = Array.isArray(state._bundleNotificationsRaw) ? state._bundleNotificationsRaw.slice() : [];
             if (useFirestoreJoinFlow()) {
                 bundle = bundle.filter(function (n) {
-                    return !n || n.type !== 'join_request';
+                    return (
+                        !n ||
+                        (n.type !== 'join_request' &&
+                            n.type !== 'thanks_tip' &&
+                            n.type !== 'thanks_granted')
+                    );
                 });
             }
             var fsList = Array.isArray(state._fsNotificationRows) ? state._fsNotificationRows.slice() : [];
@@ -1306,6 +1447,7 @@
             updateNotifBadge();
             syncDetailActionBars();
             updateHomeJoinRequestBanner();
+            reconcileProfileThanksFromUsersPublic();
         }
 
         function countPendingJoinRequestsForOrganizer() {
@@ -1370,7 +1512,6 @@
                 return Object.assign({}, x);
             });
             mergeNotificationsIntoState();
-            reconcileProfileThanksFromUsersPublic();
             var dmTouched = liveSyncMergeDmThreads(data.dmThreads || {});
             liveSyncRebuildMyHostedIds();
             if (typeof window.__tfSyncSaveUserVolsFromState === 'function') {
@@ -1451,6 +1592,23 @@
                                         : 10;
                                 curPub.thanksCount = curTc + addAmt;
                                 usersPublic[appUid] = curPub;
+                            }
+                        }
+                        if (n && n.type === 'thanks_tip') {
+                            var orgUidTip = String(n.organizerUserId || '').trim();
+                            if (orgUidTip) {
+                                var tipAdd = 1;
+                                if (n.thanksAmount != null) {
+                                    var tTip = Number(n.thanksAmount);
+                                    tipAdd = isFinite(tTip) && tTip >= 1 ? Math.floor(tTip) : 1;
+                                }
+                                var orgPub = Object.assign({}, usersPublic[orgUidTip] || {});
+                                var orgTc =
+                                    typeof orgPub.thanksCount === 'number' && isFinite(orgPub.thanksCount)
+                                        ? Math.max(0, Math.floor(orgPub.thanksCount))
+                                        : 10;
+                                orgPub.thanksCount = orgTc + tipAdd;
+                                usersPublic[orgUidTip] = orgPub;
                             }
                         }
                         var arr;
@@ -2464,7 +2622,9 @@
             var dmBtn = document.getElementById('detailDmBtn');
             if (dmBtn) {
                 dmBtn.dataset.chatWith = d.chatWith || '主催者';
-                if (d.hostedByUserId) dmBtn.dataset.organizerUserId = d.hostedByUserId;
+                var orgUidDm = String(d.hostedByUserId || d.authorId || '').trim();
+                if (!orgUidDm) orgUidDm = userIdForDisplayName(d.chatWith || '') || '';
+                if (orgUidDm) dmBtn.dataset.organizerUserId = orgUidDm;
                 else delete dmBtn.dataset.organizerUserId;
             }
 
@@ -2612,6 +2772,7 @@
                 var avatarInner = peerPhoto
                     ? ('<img class="dm-avatar-img" src="' + dmEsc(peerPhoto) + '" alt="">')
                     : dmEsc(t.avatar);
+                var openPeerUid = t.peerUserId || userIdForDisplayName(t.with || '') || '';
                 card.innerHTML =
                     '<div class="dm-thread-card-inner" role="button" tabindex="0">' +
                         '<div class="dm-thread">' +
@@ -2627,7 +2788,8 @@
                 var openThread = function () {
                     t.unread = false;
                     setUnreadFlag();
-                    openChat(t.with, t.peerUserId || '');
+                    if (openPeerUid && !t.peerUserId) t.peerUserId = openPeerUid;
+                    openChat(t.with, openPeerUid || t.peerUserId || '');
                     renderDmThreads();
                 };
                 var inner = card.querySelector('.dm-thread-card-inner');
@@ -2980,7 +3142,7 @@
                 closeThankOrganizerModal();
                 return;
             }
-            var orgUid = String(state.pendingThankOrganizerUserId || '').trim();
+            var orgUid = resolveOrganizerUserIdForThanks(state.pendingThankOrganizerUserId, org);
             if (!orgUid) {
                 showToast('募集者の同期アカウント情報がないため、ありがとうを送れません（同期ログインと募集のホスト情報が必要です）');
                 return;
@@ -3023,27 +3185,59 @@
                 showToast('ありがとうが足りません（所持 ' + bal + '）');
                 return;
             }
+            var applicantName = syncAccountNameFromDom() || '参加者';
+            var volTitle = state.pendingThankVolTitle || '';
+            function finishThanksTipUi() {
+                var text = 'ありがとうを送りました。';
+                appendOutgoingDm(org, text, orgUid);
+                state.thanksTipCooldownByUserId[orgUid] = now;
+                setUnreadFlag();
+                renderDmThreads();
+                closeThankOrganizerModal();
+                showToast('お礼とありがとうを送信しました');
+            }
+            if (useFirestoreJoinFlow()) {
+                if (typeof postThanksTipFirestore !== 'function') {
+                    showToast('通知の送信に失敗しました（未対応のビルド）');
+                    return;
+                }
+                postThanksTipFirestore(
+                    {
+                        organizerUserId: orgUid,
+                        thanksAmount: per,
+                        organizerName: org,
+                        applicantName: applicantName,
+                        volTitle: volTitle
+                    },
+                    function (ok) {
+                        if (!ok) {
+                            showToast(
+                                'ありがとうの送信に失敗しました。Firebase の通知ルール（thanks_tip）をデプロイ済みか確認してください'
+                            );
+                            return;
+                        }
+                        state.profile.thanksCount = bal - per;
+                        persistProfileThanksCount();
+                        finishThanksTipUi();
+                    }
+                );
+                return;
+            }
             state.profile.thanksCount = bal - per;
             persistProfileThanksCount();
-            var text = 'ありがとうを送りました。';
-            appendOutgoingDm(org, text, orgUid);
             var tipN = {
                 id: 'notif-tip-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8),
                 type: 'thanks_tip',
                 at: '今',
                 organizerName: org,
                 organizerUserId: orgUid,
-                applicantName: syncAccountNameFromDom() || '参加者',
+                applicantName: applicantName,
                 applicantUserId: getMyUserId() || undefined,
-                volTitle: state.pendingThankVolTitle || '',
+                volTitle: volTitle,
                 thanksAmount: per
             };
             liveSyncPostNotification(tipN);
-            state.thanksTipCooldownByUserId[orgUid] = now;
-            setUnreadFlag();
-            renderDmThreads();
-            closeThankOrganizerModal();
-            showToast('お礼とありがとうを送信しました');
+            finishThanksTipUi();
         }
         function confirmJoin() {
             var v = state.vols[state.currentDetailId];
@@ -3764,7 +3958,7 @@
             if (chatThanksSend) {
                 chatThanksSend.addEventListener('click', function () {
                     var toName = state.currentChatWith || '相手';
-                    var toUid = state.currentChatPeerUserId || '';
+                    var toUid = resolveOrganizerUserIdForThanks(state.currentChatPeerUserId, toName);
                     if (!canHostSendThanksToUser(toUid, toName)) {
                         showToast('参加者側からはありがとうを送れません（主催者のみ送信できます）');
                         return;

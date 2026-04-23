@@ -622,6 +622,11 @@
             display: flex;
             flex-direction: column;
         }
+        /* ホーム：カード列の左右余白だけ少し広げる（他タブの --card-space はそのまま） */
+        #home.content-section {
+            padding-left: calc(22px + env(safe-area-inset-left, 0px));
+            padding-right: calc(22px + env(safe-area-inset-right, 0px));
+        }
         /* ホーム：おすすめをナビ直上まで縦に敷き詰める */
         #home.content-section.active {
             gap: 18px;

@@ -157,7 +157,10 @@
             if (typeof data.avatar === 'string' && data.avatar.trim()) state.profile.avatar = data.avatar.trim().slice(0, 8);
             if (typeof data.bio === 'string') state.profile.bio = data.bio.slice(0, 500);
             if (typeof data.thanksCount === 'number' && isFinite(data.thanksCount) && data.thanksCount >= 0) {
-                state.profile.thanksCount = Math.floor(data.thanksCount);
+                var incomingTc = Math.floor(data.thanksCount);
+                var curTc = Math.max(0, Math.floor(Number(state.profile.thanksCount) || 0));
+                /** キャッシュの古い users ドキュメントが thanks_tip 反映後のローカルを上書きしない（max を取る） */
+                state.profile.thanksCount = Math.max(incomingTc, curTc);
             }
             var hasPhotoStorageUrlField = Object.prototype.hasOwnProperty.call(data, 'photoStorageUrl');
             var hasPhotoURLField = Object.prototype.hasOwnProperty.call(data, 'photoURL');
@@ -180,6 +183,9 @@
             if (typeof refreshAllHomeCardIcons === 'function') refreshAllHomeCardIcons();
             renderAccount();
             renderSearchResults();
+            if (typeof mergeNotificationsIntoState === 'function') {
+                mergeNotificationsIntoState();
+            }
         }
 
         function reloadUserProfileFromFirestore() {
@@ -446,20 +452,50 @@
                 displayName: state.profile.name || '',
                 avatar: state.profile.avatar || '🙂',
                 bio: state.profile.bio || '',
-                thanksCount:
-                    typeof state.profile.thanksCount === 'number' && isFinite(state.profile.thanksCount)
-                        ? Math.max(0, Math.floor(state.profile.thanksCount))
-                        : 10,
                 photoStorageUrl: photoStorageUrl,
                 photoURL: photoStorageUrl,
                 updatedAt: TF.serverTimestamp()
             };
+            /**
+             * Firestore 参加フロー: 他ユーザーからの increment 後に、古いローカル値で thanksCount を
+             * merge 上書きしない（付与が反映されない原因になる）。
+             * 所持数の更新は persistProfileThanksCount → patchMyUserThanksCountToFirestore のみ。
+             */
+            var fsJoin = typeof useFirestoreJoinFlow === 'function' && useFirestoreJoinFlow();
+            if (!fsJoin) {
+                payload.thanksCount =
+                    typeof state.profile.thanksCount === 'number' && isFinite(state.profile.thanksCount)
+                        ? Math.max(0, Math.floor(state.profile.thanksCount))
+                        : 10;
+            }
             if (state.dismissedNotifsRemote && typeof state.dismissedNotifsRemote === 'object') {
                 payload.dismissedNotifs = state.dismissedNotifsRemote;
             }
             return TF.setDoc(userDocRef, payload, { merge: true })
                 .then(function () { return true; })
                 .catch(function () { return false; });
+        }
+
+        /** Firestore 参加フロー: 自分の users.thanksCount を明示更新（プロフィール flush では触らない） */
+        function patchMyUserThanksCountToFirestore() {
+            var TF = tf();
+            var userDocRef = getCurrentUserDocRef();
+            if (!TF || !userDocRef) return Promise.resolve(false);
+            var tc =
+                typeof state.profile.thanksCount === 'number' && isFinite(state.profile.thanksCount)
+                    ? Math.max(0, Math.floor(state.profile.thanksCount))
+                    : 10;
+            return TF.setDoc(
+                userDocRef,
+                { thanksCount: tc, updatedAt: TF.serverTimestamp() },
+                { merge: true }
+            )
+                .then(function () {
+                    return true;
+                })
+                .catch(function () {
+                    return false;
+                });
         }
 
 
@@ -864,6 +900,154 @@
                     var msg = err && err.message ? String(err.message) : String(err);
                     console.error('[Teertab] submitJoinApplicationFirestore FAILED', code, msg, err);
                     done(false, code || msg);
+                });
+        }
+
+        /**
+         * 募集者へ thanks_tip 通知 + 募集者の users/{uid}.thanksCount を increment（ルールで他ユーザーの users が書ける前提）。
+         * 通知の consume だけに頼るとリスナ順で取りこぼすため、残高の正は users ドキュメントに載せる。
+         */
+        function postThanksTipFirestore(opts, done) {
+            if (typeof done !== 'function') done = function () {};
+            var TF = tf();
+            var applicantId = String(getMyUserId() || '').trim();
+            var orgUid = opts && opts.organizerUserId ? String(opts.organizerUserId).trim() : '';
+            var amt = opts && opts.thanksAmount != null ? Math.floor(Number(opts.thanksAmount)) : 1;
+            if (
+                !TF ||
+                !TF.notificationDocRef ||
+                !TF.writeBatch ||
+                !TF.increment ||
+                !TF.userDocRef ||
+                !applicantId ||
+                !orgUid ||
+                orgUid === applicantId
+            ) {
+                done(false);
+                return;
+            }
+            if (!isFinite(amt) || amt < 1 || amt > 10000) {
+                done(false);
+                return;
+            }
+            var nid =
+                'thanks_tip_' + String(Date.now()) + '_' + Math.random().toString(36).slice(2, 10);
+            var payload = {
+                recipientId: orgUid,
+                organizerUserId: orgUid,
+                applicantUserId: applicantId,
+                applicantId: applicantId,
+                type: 'thanks_tip',
+                thanksAmount: amt,
+                organizerName: String((opts && opts.organizerName) || '').trim().slice(0, 80),
+                applicantName: String((opts && opts.applicantName) || '').trim().slice(0, 80),
+                volTitle: String((opts && opts.volTitle) || '').trim().slice(0, 200),
+                createdAt: TF.serverTimestamp()
+            };
+            var batch = TF.writeBatch(TF.db);
+            batch.set(TF.notificationDocRef(nid), payload);
+            batch.set(
+                TF.userDocRef(orgUid),
+                {
+                    thanksCount: TF.increment(amt),
+                    updatedAt: TF.serverTimestamp()
+                },
+                { merge: true }
+            );
+            batch
+                .commit()
+                .then(function () {
+                    done(true);
+                })
+                .catch(function (e) {
+                    console.warn('[Teertab] postThanksTipFirestore failed', e);
+                    done(false);
+                });
+        }
+
+        /**
+         * 主催者→参加者の thanks_granted: 各参加者の users/{uid}.thanksCount を increment + 通知ドキュメント作成。
+         * rows: { applicantUserId, thanksAmount, organizerUserId, organizerName, applicantName, volTitle, volId }[]
+         */
+        function postThanksGrantedBatchFirestore(rows, done) {
+            if (typeof done !== 'function') done = function () {};
+            if (!Array.isArray(rows) || !rows.length) {
+                done(false);
+                return;
+            }
+            var TF = tf();
+            var org = String(getMyUserId() || '').trim();
+            if (!TF || !TF.writeBatch || !TF.increment || !TF.userDocRef || !TF.notificationDocRef || !org) {
+                done(false);
+                return;
+            }
+            var batch = TF.writeBatch(TF.db);
+            var baseTick = Date.now();
+            var ops = 0;
+            rows.forEach(function (r, ix) {
+                var auid = r && r.applicantUserId ? String(r.applicantUserId).trim() : '';
+                var amt = r && r.thanksAmount != null ? Math.floor(Number(r.thanksAmount)) : 0;
+                if (!auid || auid === org || !isFinite(amt) || amt < 1 || amt > 10000) return;
+                var nid =
+                    'thanks_granted_' + String(baseTick) + '_' + String(ix) + '_' + Math.random().toString(36).slice(2, 9);
+                batch.set(TF.notificationDocRef(nid), {
+                    recipientId: auid,
+                    applicantUserId: auid,
+                    applicantId: auid,
+                    organizerUserId: String((r && r.organizerUserId) || org).trim(),
+                    type: 'thanks_granted',
+                    thanksAmount: amt,
+                    organizerName: String((r && r.organizerName) || '').trim().slice(0, 80),
+                    applicantName: String((r && r.applicantName) || '').trim().slice(0, 80),
+                    volTitle: String((r && r.volTitle) || '').trim().slice(0, 200),
+                    volId: String((r && r.volId) || '').trim().slice(0, 200),
+                    createdAt: TF.serverTimestamp()
+                });
+                batch.set(
+                    TF.userDocRef(auid),
+                    {
+                        thanksCount: TF.increment(amt),
+                        updatedAt: TF.serverTimestamp()
+                    },
+                    { merge: true }
+                );
+                ops++;
+            });
+            if (!ops) {
+                done(false);
+                return;
+            }
+            batch
+                .commit()
+                .then(function () {
+                    done(true);
+                })
+                .catch(function (e) {
+                    console.warn('[Teertab] postThanksGrantedBatchFirestore failed', e);
+                    done(false);
+                });
+        }
+
+        /** 参加申請通知ドキュメントに thanksGranted を付与（Firestore） */
+        function patchJoinNotificationThanksGrantedFirestore(notifId, done) {
+            if (typeof done !== 'function') done = function () {};
+            var TF = tf();
+            var id = String(notifId || '').trim();
+            if (!TF || !TF.notificationDocRef || !TF.setDoc || !id) {
+                done(false);
+                return;
+            }
+            TF.setDoc(
+                TF.notificationDocRef(id),
+                { thanksGranted: true, updatedAt: TF.serverTimestamp() },
+                { merge: true }
+            )
+                .then(function () {
+                    done(true);
+                })
+                .catch(function (e) {
+                    console.warn('[Teertab] patchJoinNotificationThanksGrantedFirestore', id, e);
+                    done(false);
                 });
         }
 

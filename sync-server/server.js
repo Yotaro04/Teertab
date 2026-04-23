@@ -425,7 +425,7 @@ app.post('/api/notifications', function (req, res) {
         }
         n.thanksAmount = Math.floor(tta);
         var orgUid = String(n.organizerUserId || '').trim();
-        if (!orgUid || orgUid.indexOf('usr-') !== 0) {
+        if (!orgUid) {
             return res.status(400).json({ error: 'organizerUserId' });
         }
         n.organizerUserId = orgUid;
@@ -440,6 +440,18 @@ app.post('/api/notifications', function (req, res) {
             var tcGrant = Number(uGrant.thanksCount);
             var baseGrant = isFinite(tcGrant) ? Math.floor(tcGrant) : 10;
             uGrant.thanksCount = baseGrant + addGrant;
+        }
+    }
+    if (n.type === 'thanks_tip') {
+        var orgTip = String(n.organizerUserId || '').trim();
+        if (orgTip && bundle.users[orgTip]) {
+            var addTip =
+                n.thanksAmount != null ? Math.floor(Number(n.thanksAmount)) : 1;
+            if (!isFinite(addTip) || addTip < 1) addTip = 1;
+            var uTip = bundle.users[orgTip];
+            var tcTip = Number(uTip.thanksCount);
+            var baseTip = isFinite(tcTip) ? Math.floor(tcTip) : 10;
+            uTip.thanksCount = baseTip + addTip;
         }
     }
     bundle.notifications = bundle.notifications.filter(function (x) {
